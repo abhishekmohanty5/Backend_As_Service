@@ -6,7 +6,6 @@ Here is the comprehensive **README.md** for your project. You can copy and paste
 
 This repository contains the Spring Boot backend for the JobHunt SaaS platform. It manages user authentication, subscription plans, and project tracking.
 
-## 🚀 Quick Start for Frontend
 
 * **Base URL:** `http://localhost:8080`
 * **CORS:** Allowed for `http://localhost:3000`
@@ -106,4 +105,3 @@ The backend uses a relational structure (PostgreSQL/MySQL).
 
 ---
 
-**Would you like me to also generate a Postman Collection file (JSON) so your team can test these endpoints without writing any code?**
