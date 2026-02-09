@@ -18,7 +18,7 @@ public class SubscriptionCleanupService {
     SubscriptionRepo subscriptionRepo;
 
     @Transactional
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "0 0 2 * * ?")
     public void expireSubscriptions()
     {
         LocalDateTime now = LocalDateTime.now();
@@ -30,7 +30,8 @@ public class SubscriptionCleanupService {
                     sub.setStatus(SubscriptionStatus.EXPIRED));
 
             subscriptionRepo.saveAll(expiredSubscriptions);
-            System.out.println("Expired " + expiredSubscriptions.size() + " subscriptions.");        }
+            System.out.println("Expired " + expiredSubscriptions.size() + " subscriptions.");
+        }
 
     }
 

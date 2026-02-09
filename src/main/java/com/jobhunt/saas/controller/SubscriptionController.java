@@ -4,7 +4,7 @@ import com.jobhunt.saas.dto.AppResponse;
 import com.jobhunt.saas.dto.SubscriptionResponse;
 import com.jobhunt.saas.entity.Subscription;
 import com.jobhunt.saas.service.SubscriptionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,15 +13,11 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/subscriptions")
+@RequiredArgsConstructor
 public class SubscriptionController {
 
 
     private final SubscriptionService subscriptionService;
-
-    @Autowired
-    public SubscriptionController(SubscriptionService subscriptionService) {
-        this.subscriptionService = subscriptionService;
-    }
 
     @PostMapping("/subscribe/{id}")
     public ResponseEntity<AppResponse<SubscriptionResponse>> subscribe(@PathVariable Long id) {

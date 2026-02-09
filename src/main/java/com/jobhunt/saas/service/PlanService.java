@@ -3,22 +3,21 @@ package com.jobhunt.saas.service;
 import com.jobhunt.saas.dto.PlanRequest;
 import com.jobhunt.saas.entity.Plan;
 import com.jobhunt.saas.repository.PlanRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PlanService {
 
      private final PlanRepo planRepo;
 
-    @Autowired
-    public PlanService(PlanRepo planRepo) {
-        this.planRepo = planRepo;
-    }
-
+     @CacheEvict(cacheNames = "Plans", allEntries = true)
     public void createPlan(PlanRequest planRequest) {
 
         Plan plan = new Plan();
@@ -32,10 +31,13 @@ public class PlanService {
         planRepo.save(plan);
     }
 
+    @Cacheable(cacheNames = "Plans")
     public List<Plan> findAll() {
         return planRepo.findAll();
     }
 
+
+    @CacheEvict(cacheNames = "Plans", allEntries = true)
     public void activePlan(Long id) {
         Plan plan = planRepo.findById(id)
                 .orElseThrow(() ->
@@ -46,6 +48,7 @@ public class PlanService {
         planRepo.save(plan);
     }
 
+    @CacheEvict(cacheNames = "Plans", allEntries = true)
     public void inactivePlan(Long id) {
         Plan plan=planRepo.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Plan with ID " + id + " not found"));

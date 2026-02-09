@@ -42,21 +42,6 @@ public class PlanController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<AppResponse<List<Plan>>> getPlans() {
-
-        List<Plan> plans = planService.findAll();
-
-        AppResponse<List<Plan>> response = new AppResponse<>(
-                "success",
-                plans,
-                200,
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
     @PutMapping("/{id}/activate")
     public ResponseEntity<AppResponse<String>> activatePlan(@PathVariable Long id) {
 
@@ -74,6 +59,15 @@ public class PlanController {
 
         return ResponseEntity.ok(
                 new AppResponse<>("success", "Plan deactivated", 200, LocalDateTime.now())
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<AppResponse<List<Plan>>> getAllPlans() {
+        List<Plan> data = planService.findAll();
+
+        return ResponseEntity.ok(
+                new AppResponse<>("Success",data,HttpStatus.OK.value(),LocalDateTime.now())
         );
     }
 }

@@ -40,5 +40,4 @@ public class CustomUserDetail implements UserDetails {
         return true;
     }
 
-
 }
