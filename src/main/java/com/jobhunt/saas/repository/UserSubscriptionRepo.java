@@ -13,9 +13,17 @@ public interface UserSubscriptionRepo  extends JpaRepository<UserSubscription,Lo
     List<UserSubscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
     // CORRECT - Following the actual field name "subscriptionCategory"
     List<UserSubscription> findByUserIdAndSubscriptionCategoryId(Long userId, Long categoryId);
+
     List<UserSubscription> findByUserIdAndNextBillingDateBetween(
             Long userId,
             LocalDate startDate,
             LocalDate endDate
+    );
+
+    List<UserSubscription> findByNextBillingDateBetweenAndStatus(
+            LocalDate startDate,
+            LocalDate endDate,
+            SubscriptionStatus status
+
     );
 }
