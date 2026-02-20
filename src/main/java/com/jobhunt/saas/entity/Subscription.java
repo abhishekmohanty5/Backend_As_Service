@@ -25,6 +25,9 @@ public class Subscription {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(nullable = false)
+    private Long tenantId;
+
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "plan_id")

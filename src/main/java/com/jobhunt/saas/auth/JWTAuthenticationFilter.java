@@ -1,11 +1,13 @@
 package com.jobhunt.saas.auth;
 
+import com.jobhunt.saas.tenant.TenantContext;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,13 +19,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class JWTAuthenticationFilter  extends OncePerRequestFilter {
 
-    @Autowired
-    private JWTService jwtService;
+    private final JWTService jwtService;
 
-    @Autowired
-    private CustomUserDetailService userDetailService;
+    private final CustomUserDetailService userDetailService;
 
 
     @Override
@@ -60,20 +61,34 @@ public class JWTAuthenticationFilter  extends OncePerRequestFilter {
 
         }
 
-        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        UserDetails userDetails = userDetailService.loadUserByUsername(userEmail);
+            UserDetails userDetails = userDetailService.loadUserByUsername(userEmail);
 
-        //Validate The Token
             if (jwtService.isTokenValid(token, userDetails.getUsername())) {
+
+                Claims claims = jwtService.extractAllClaims(token);
+                Long tenantId = claims.get("tenantId", Long.class);
+
+                // 🔑 NEW: Store tenantId for this request
+                TenantContext.setTenantId(tenantId);
+
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities()
                         );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            TenantContext.clear();
+        }
     }
 }

@@ -8,6 +8,10 @@ import lombok.Data;
 
 @Data
 public class RegRequest {
+
+    @NotBlank(message = "Tenant Name Cannot Be Blank")
+    private String tenantName;
+
     @NotBlank(message = "name Cannot be Blank")
     private String userName;
 

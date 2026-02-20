@@ -3,13 +3,13 @@ spring:
     name: saas
 
   datasource:
-    url: jdbc:mysql://localhost:3306/SAASDB
+    url: jdbc:mysql://localhost:3306/saasdb
     username: root
     password: "abhi@2004"
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
   mail:

@@ -10,6 +10,7 @@ import java.util.List;
 public interface UserSubscriptionRepo  extends JpaRepository<UserSubscription,Long> {
 
     List<UserSubscription> findByUserId(Long userId);
+
     List<UserSubscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
     // CORRECT - Following the actual field name "subscriptionCategory"
     List<UserSubscription> findByUserIdAndSubscriptionCategoryId(Long userId, Long categoryId);

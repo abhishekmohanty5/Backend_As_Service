@@ -30,22 +30,22 @@ public class SecurityConfig {
     private JWTAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {})
-                //CSRF(Cross-Site Request Forgery)
+                .cors(cors -> {
+                })
+                // CSRF(Cross-Site Request Forgery)
                 .csrf(csrf -> csrf.disable())
 
-                //Authorization Configuration
+                // Authorization Configuration
                 .authorizeHttpRequests(auth -> auth
-                        //Ignore Or No need of AuthenticationObject for These Request
-                        .requestMatchers("/api/auth/**","/api/public","/error").permitAll()
+                        // Ignore Or No need of AuthenticationObject for These Request
+                        .requestMatchers("/api/auth/**", "/api/public", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**").hasRole("USER")
-                        .requestMatchers("/api/subscriptions/**").hasRole("USER")
-                        .requestMatchers("/api/projects/**").hasRole("USER")
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/subscriptions/**").hasRole("ADMIN")
+                        // Dashboard is for any authenticated user (startup founder)
+                        .requestMatchers("/api/dashboard", "/api/dashboard/**").authenticated()
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

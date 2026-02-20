@@ -26,11 +26,14 @@ public class JWTService {
         byte[] encoded = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(encoded);
     }
-    public String  generateToken(String email)
+
+    public String generateToken(String email, Long tenantId)
     {
-        Map<String,Object> claims = new HashMap<String,Object>();
-        return createToken(claims,email);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tenantId", tenantId);
+        return createToken(claims, email);
     }
+
     private String  createToken(Map<String,Object> claims,String email){
         Date now = new Date(System.currentTimeMillis());
         Date exp=new Date(now.getTime() + jwtExpiration);

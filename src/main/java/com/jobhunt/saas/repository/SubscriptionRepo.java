@@ -12,14 +12,18 @@ import java.util.Optional;
 @Repository
 public interface SubscriptionRepo extends JpaRepository<Subscription, Long> {
 
-    Optional<Subscription> getSubscriptionByUserId(Long userid);
+        Optional<Subscription> findByUserIdAndTenantId(Long userId, Long tenantId);
 
-    // Used to check if an ACTIVE subscription exists
-    boolean existsByUserIdAndStatus(Long userId, SubscriptionStatus status);
+        boolean existsByUserIdAndTenantIdAndStatus(
+                        Long userId,
+                        Long tenantId,
+                        SubscriptionStatus status);
 
-    // Used to find the specific ACTIVE subscription for cancellation
-    Optional<Subscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
+        Optional<Subscription> findByUserIdAndTenantIdAndStatus(
+                        Long userId,
+                        Long tenantId,
+                        SubscriptionStatus status);
 
-    //Find All user Where Status Is Active and End Time Before currentTime
-    List<Subscription>findAllByStatusAndEndDateBefore(SubscriptionStatus status, LocalDateTime dateTime);
+        // Find All user Where Status Is Active and End Time Before currentTime
+        List<Subscription> findAllByStatusAndEndDateBefore(SubscriptionStatus status, LocalDateTime dateTime);
 }
