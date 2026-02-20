@@ -27,7 +27,7 @@ public class TestBackendController {
    @GetMapping("/email")
     public ResponseEntity<AppResponse<String>> testEmail(){
 
-        emailService.sendEmail("2470024@kiit.ac.in","Check Email Module","Email Sent SuccessFully");
+        emailService.sendEmail("2470033@kiit.ac.in","Check Email Module","Email Sent SuccessFully");
 
         AppResponse<String>  response = AppResponse.<String>builder()
                 .message("Success")
