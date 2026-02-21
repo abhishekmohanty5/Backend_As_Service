@@ -32,18 +32,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {
-                })
-                // CSRF(Cross-Site Request Forgery)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-
-                // Authorization Configuration
                 .authorizeHttpRequests(auth -> auth
-                        // Ignore Or No need of AuthenticationObject for These Request
                         .requestMatchers("/api/auth/**", "/api/public", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/subscriptions/**").hasRole("ADMIN")
-                        // Dashboard is for any authenticated user (startup founder)
                         .requestMatchers("/api/dashboard", "/api/dashboard/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
@@ -54,7 +48,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // The BCryptPassword Encoder
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -70,25 +64,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 1. Allow your frontend origin
         String allowedOrigins = System.getenv("ALLOWED_ORIGINS");
-        if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
-            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        if (allowedOrigins == null || allowedOrigins.isEmpty() || allowedOrigins.equals("*")) {
+            // If *, we must Use setAllowedOriginPatterns for compatibility with
+            // allowCredentials
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         } else {
-            configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         }
 
-        // 2. Allow specific HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // 3. Allow headers (important for JWT "Authorization" header)
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-
-        // 4. Allow credentials if you use cookies/sessions
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Apply to all endpoints
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }
