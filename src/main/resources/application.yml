@@ -1,22 +1,26 @@
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   application:
     name: saas
 
   datasource:
-    url: ${DB_URL} #jdbc:mysql://localhost:3306/saasdb
-    username: ${DB_USERNAME}root
-    password: ${DB_PASSWORD} #abhi@2004
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD} 
 
   jpa:
     hibernate:
-      ddl-auto: create
-    show-sql: true
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME} #abhishekmohanty78962@gmail.com
-    password: ${SMTP_PASSWORD} #hrwarblvwgcjgvqk
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     protocol: smtp
     default-encoding: UTF-8
 
@@ -34,11 +38,11 @@ spring:
   ai:
     google:
       genai:
-        api-key: ${GEMINI_API_KEY} #AIzaSyCwTpeByfBAFaYg7CnEsBVYyBhJlYaOxv0
+        api-key: ${GEMINI_API_KEY}
 
 
 application:
   security:
     jwt:
-      secret-key: ${JWT_SECRET_KEY} #5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+      secret-key: ${JWT_SECRET}
       expiration: 1800000
