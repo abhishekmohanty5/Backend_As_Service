@@ -14,7 +14,8 @@ RUN mvn dependency:go-offline -B --no-transfer-progress
 COPY src ./src
 
 # Build the JAR (skip tests for faster build)
-RUN mvn clean package -DskipTests -B --no-transfer-progress
+RUN mvn clean package -DskipTests -B --no-transfer-progress && \
+    cp target/*.jar target/app.jar
 
 # ============================================================
 # Stage 2: RUN — use a lightweight JRE to run the JAR
@@ -23,8 +24,8 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Copy only the main JAR (excluding the .original backup created by Spring Boot)
-COPY --from=builder /app/target/saas-0.0.1-SNAPSHOT.jar app.jar
+# Copy the renamed JAR from the build stage
+COPY --from=builder /app/target/app.jar app.jar
 
 # Railway injects PORT dynamically — Spring reads it via ${PORT:8080}
 EXPOSE 8080
