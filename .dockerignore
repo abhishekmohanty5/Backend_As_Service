@@ -1,0 +1,11 @@
+target/
+.git/
+.idea/
+*.iml
+.env
+.env.*
+run.ps1
+startup_log.txt
+build_output.txt
+run_output*.txt
+.mvn/wrapper/maven-wrapper.jar
