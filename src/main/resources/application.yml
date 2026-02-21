@@ -11,6 +11,10 @@ spring:
     password: ${DB_PASSWORD:${MYSQLPASSWORD:}}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.autoconfigure.google.genai.GoogleGenAiAutoConfiguration
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -48,5 +52,6 @@ spring:
 application:
   security:
     jwt:
-      secret-key: ${JWT_SECRET:fallback-secret-key-change-in-production}
+      # Valid Base64-encoded 256-bit key (used as fallback if JWT_SECRET is not set in Railway)
+      secret-key: ${JWT_SECRET:NTM2NzU2NkI1OTcwMzM3MzM2NzYzOTc5MkY0MjNGNDUyODQ4MkI0RDZCNTE2NTU0Njg1NzZENzE3NDM3}
       expiration: 1800000

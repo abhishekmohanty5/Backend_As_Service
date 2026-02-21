@@ -52,8 +52,6 @@ public class SubscriptionServiceTest {
 
     @Test
     public void getExceptionForInactiveSubscription() {
-        when(authContext.getCurrentUserId()).thenReturn(USER_ID);
-
         when(subscriptionRepo.findByUserIdAndTenantIdAndStatus(USER_ID, TENANT_ID, SubscriptionStatus.ACTIVE))
                 .thenReturn(Optional.empty());
 
