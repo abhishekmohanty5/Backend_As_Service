@@ -1,26 +1,30 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
 
 spring:
   application:
     name: saas
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD} 
+    url: ${DB_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:saasdb}}
+    username: ${DB_USERNAME:${MYSQLUSER:root}}
+    password: ${DB_PASSWORD:${MYSQLPASSWORD:}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
     open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     protocol: smtp
     default-encoding: UTF-8
 
@@ -38,11 +42,11 @@ spring:
   ai:
     google:
       genai:
-        api-key: ${GEMINI_API_KEY}
+        api-key: ${GEMINI_API_KEY:}
 
 
 application:
   security:
     jwt:
-      secret-key: ${JWT_SECRET}
+      secret-key: ${JWT_SECRET:fallback-secret-key-change-in-production}
       expiration: 1800000
