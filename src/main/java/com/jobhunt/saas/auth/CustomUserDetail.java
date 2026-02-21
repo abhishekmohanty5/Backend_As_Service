@@ -1,7 +1,7 @@
 package com.jobhunt.saas.auth;
 
 import com.jobhunt.saas.entity.Users;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,9 +32,10 @@ public class CustomUserDetail implements UserDetails {
         return user.getEmail();
     }
 
-    public Long  getId() {
+    public Long getId() {
         return user.getId();
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
