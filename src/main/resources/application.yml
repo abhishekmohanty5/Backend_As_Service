@@ -6,7 +6,7 @@ spring:
     name: saas
 
   datasource:
-    url: ${DB_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:railway}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true}
+    url: ${DB_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQL_DATABASE:railway}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true}
     username: ${DB_USERNAME:${MYSQLUSER:root}}
     password: ${DB_PASSWORD:${MYSQLPASSWORD:}}
     driver-class-name: com.mysql.cj.jdbc.Driver
