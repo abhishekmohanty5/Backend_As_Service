@@ -23,8 +23,8 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Copy only the JAR from the build stage
-COPY --from=builder /app/target/*.jar app.jar
+# Copy only the main JAR (excluding the .original backup created by Spring Boot)
+COPY --from=builder /app/target/saas-0.0.1-SNAPSHOT.jar app.jar
 
 # Railway injects PORT dynamically — Spring reads it via ${PORT:8080}
 EXPOSE 8080

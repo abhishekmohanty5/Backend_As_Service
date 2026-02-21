@@ -53,5 +53,5 @@ application:
   security:
     jwt:
       # Valid Base64-encoded 256-bit key (used as fallback if JWT_SECRET is not set in Railway)
-      secret-key: ${JWT_SECRET:NTM2NzU2NkI1OTcwMzM3MzM2NzYzOTc5MkY0MjNGNDUyODQ4MkI0RDZCNTE2NTU0Njg1NzZENzE3NDM3}
+      secret-key: ${JWT_SECRET:}
       expiration: 1800000
