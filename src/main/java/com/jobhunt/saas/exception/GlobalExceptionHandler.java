@@ -17,24 +17,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidCredentialException.class)
     public ResponseEntity<AppResponse<String>> handleException(InvalidCredentialException ex) {
-        AppResponse<String> response =
-                new AppResponse<>("error",ex.getMessage(),401, LocalDateTime.now());
+        AppResponse<String> response = new AppResponse<>("error", ex.getMessage(), 401, LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<AppResponse<Map<String, String>>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
         AppResponse<Map<String, String>> response = new AppResponse<>(
                 "Validation failed",
                 errors,
                 400,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         return ResponseEntity.badRequest().body(response);
     }
@@ -46,20 +43,28 @@ public class GlobalExceptionHandler {
                 "Operation Failed",
                 ex.getMessage(),
                 400,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
     @ExceptionHandler(SubscriptionException.class)
     public ResponseEntity<AppResponse<String>> handleSubscriptionException(SubscriptionException ex) {
         AppResponse<String> response = new AppResponse<>(
                 "Subscription Error",
                 ex.getMessage(),
                 400,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<AppResponse<String>> handleRuntimeException(RuntimeException ex) {
+        AppResponse<String> response = new AppResponse<>(
+                "Error",
+                ex.getMessage(),
+                400,
+                LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }

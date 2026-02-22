@@ -59,12 +59,19 @@ public class DashboardService {
                 .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE).size();
 
         // 5. Build and return dashboard response
+        String tenantName = tenant != null && tenant.getName() != null ? tenant.getName() : "My Startup";
+        String currentPlan = tenant != null && tenant.getPlan() != null ? tenant.getPlan().getName() : "Free Trial";
+        java.math.BigDecimal planPrice = tenant != null && tenant.getPlan() != null ? tenant.getPlan().getPrice()
+                : java.math.BigDecimal.ZERO;
+        String status = tenant != null && tenant.getStatus() != null ? tenant.getStatus().name() : "INACTIVE";
+        LocalDateTime memberSince = tenant != null ? tenant.getCreatedAt() : user.getCreatedAt();
+
         return DashboardDto.builder()
-                .tenantName(tenant.getName())
-                .currentPlan(tenant.getPlan().getName())
-                .planPrice(tenant.getPlan().getPrice())
-                .status(tenant.getStatus().name())
-                .memberSince(tenant.getCreatedAt())
+                .tenantName(tenantName)
+                .currentPlan(currentPlan)
+                .planPrice(planPrice)
+                .status(status)
+                .memberSince(memberSince)
                 .planExpiryDate(planExpiryDate)
                 .daysRemaining(daysRemaining)
                 .clientId(tenant.getClientId())
