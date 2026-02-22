@@ -15,26 +15,23 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-public class JWTAuthenticationFilter  extends OncePerRequestFilter {
+public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
 
     private final CustomUserDetailService userDetailService;
 
-
     @Override
     protected void doFilterInternal(
-           @NonNull HttpServletRequest request,
-           @NonNull HttpServletResponse response,
-           @NonNull FilterChain filterChain) throws ServletException, IOException {
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-         System.out.println("JWT Filter triggered for URI: " + request.getRequestURI());
-
+        System.out.println("JWT Filter triggered for URI: " + request.getRequestURI());
 
         if (request.getServletPath().contains("/api/auth")) {
             filterChain.doFilter(request, response);
@@ -46,7 +43,7 @@ public class JWTAuthenticationFilter  extends OncePerRequestFilter {
         final String userEmail;
 
         // Request doesn't Contain Token Ignore Down to Other Filter Chain
-        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -54,8 +51,7 @@ public class JWTAuthenticationFilter  extends OncePerRequestFilter {
         token = authHeader.substring(7);
         try {
             userEmail = jwtService.extractSubject(token);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
 
@@ -68,19 +64,17 @@ public class JWTAuthenticationFilter  extends OncePerRequestFilter {
             if (jwtService.isTokenValid(token, userDetails.getUsername())) {
 
                 Claims claims = jwtService.extractAllClaims(token);
-                Long tenantId = claims.get("tenantId", Long.class);
+                Object tenantIdObj = claims.get("tenantId");
+                Long tenantId = tenantIdObj != null ? ((Number) tenantIdObj).longValue() : null;
 
                 // 🔑 NEW: Store tenantId for this request
                 TenantContext.setTenantId(tenantId);
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities()
-                        );
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
 
                 authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                        new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
