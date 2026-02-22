@@ -64,7 +64,8 @@ public class DashboardService {
         java.math.BigDecimal planPrice = tenant != null && tenant.getPlan() != null ? tenant.getPlan().getPrice()
                 : java.math.BigDecimal.ZERO;
         String status = tenant != null && tenant.getStatus() != null ? tenant.getStatus().name() : "INACTIVE";
-        LocalDateTime memberSince = tenant != null ? tenant.getCreatedAt() : user.getCreatedAt();
+        LocalDateTime memberSince = tenant != null && tenant.getCreatedAt() != null ? tenant.getCreatedAt()
+                : LocalDateTime.now();
 
         return DashboardDto.builder()
                 .tenantName(tenantName)
