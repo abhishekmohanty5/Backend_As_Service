@@ -8,51 +8,43 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Builder
-@Table(name = "user_subscriptions")
-public class UserSubscription {
+@Entity
+@Table(name = "tenant_plans")
+public class TenantPlan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Users user;
-
-    @Column(name = "subscription_name", nullable = false, length = 100)
-    private String subscriptionName;
-
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_plan_id")
-    private TenantPlan tenantPlan;
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "billing_cycle", nullable = false)
     private BillingCycle billingCycle;
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
-
-    @Column(name = "next_billing_date", nullable = false)
-    private LocalDate nextBillingDate;
-
-    @Column(length = 20)
-    private SubscriptionStatus status;
-
     @Column(columnDefinition = "TEXT")
-    private String notes;
+    private String features; // E.g., JSON string or comma-separated list of features
+
+    @Column(nullable = false)
+    private boolean active = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

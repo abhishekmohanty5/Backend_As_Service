@@ -10,11 +10,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final ApiUsageInterceptor apiUsageInterceptor;
+    private final ApiKeyInterceptor apiKeyInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(apiUsageInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/auth/**", "/api/public", "/error");
+                .excludePathPatterns("/api/auth/**", "/api/public", "/error", "/api/v1/**");
+
+        registry.addInterceptor(apiKeyInterceptor)
+                .addPathPatterns("/api/v1/**");
     }
 }

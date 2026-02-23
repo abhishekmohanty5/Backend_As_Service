@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "tenants")
@@ -24,12 +26,9 @@ public class Tenant {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "plan_id", nullable = false)
-    private Plan plan;
-
-    @Enumerated(EnumType.STRING)
-    private SubscriptionStatus status;
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Builder.Default
+    private List<TenantSubscription> subscriptions = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
@@ -54,6 +53,28 @@ public class Tenant {
         if (this.apiCallCount == null) {
             this.apiCallCount = 0L;
         }
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public TenantSubscription getActiveSubscription() {
+        if (subscriptions == null || subscriptions.isEmpty())
+            return null;
+        return subscriptions.stream()
+                .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
+                .findFirst()
+                .orElse(subscriptions.get(subscriptions.size() - 1));
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Plan getPlan() {
+        TenantSubscription sub = getActiveSubscription();
+        return sub != null ? sub.getPlan() : null;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public SubscriptionStatus getStatus() {
+        TenantSubscription sub = getActiveSubscription();
+        return sub != null ? sub.getStatus() : null;
     }
 
 }

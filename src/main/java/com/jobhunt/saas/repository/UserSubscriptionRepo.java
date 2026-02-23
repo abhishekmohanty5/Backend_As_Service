@@ -7,24 +7,28 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface UserSubscriptionRepo  extends JpaRepository<UserSubscription,Long> {
+public interface UserSubscriptionRepo extends JpaRepository<UserSubscription, Long> {
 
-    List<UserSubscription> findByUserId(Long userId);
+        List<UserSubscription> findByUserId(Long userId);
 
-    List<UserSubscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
-    // CORRECT - Following the actual field name "subscriptionCategory"
-    List<UserSubscription> findByUserIdAndSubscriptionCategoryId(Long userId, Long categoryId);
+        List<UserSubscription> findByUser_TenantId(Long tenantId);
 
-    List<UserSubscription> findByUserIdAndNextBillingDateBetween(
-            Long userId,
-            LocalDate startDate,
-            LocalDate endDate
-    );
+        List<UserSubscription> findByUserIdAndStatus(Long userId, SubscriptionStatus status);
 
-    List<UserSubscription> findByNextBillingDateBetweenAndStatus(
-            LocalDate startDate,
-            LocalDate endDate,
-            SubscriptionStatus status
+        // CORRECT - Following the actual field name "tenantPlan"
+        List<UserSubscription> findByUserIdAndTenantPlanId(Long userId, Long tenantPlanId);
 
-    );
+        List<UserSubscription> findByUserIdAndNextBillingDateBetween(
+                        Long userId,
+                        LocalDate startDate,
+                        LocalDate endDate);
+
+        List<UserSubscription> findByNextBillingDateBetweenAndStatus(
+                        LocalDate startDate,
+                        LocalDate endDate,
+                        SubscriptionStatus status
+
+        );
+
+        List<UserSubscription> findAllByStatusAndNextBillingDateBefore(SubscriptionStatus status, LocalDate date);
 }
