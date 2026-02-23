@@ -48,6 +48,7 @@ public class UserSubscription {
     @Column(name = "next_billing_date", nullable = false)
     private LocalDate nextBillingDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private SubscriptionStatus status;
 

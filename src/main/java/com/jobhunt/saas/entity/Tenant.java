@@ -26,7 +26,7 @@ public class Tenant {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<TenantSubscription> subscriptions = new ArrayList<>();
 

@@ -10,7 +10,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "saas_user")
+@Table(name = "saas_user", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "email", "tenant_id" })
+})
 public class Users {
 
     @Id
@@ -20,7 +22,7 @@ public class Users {
     private String username;
     @Column(nullable = false)
     private String password;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
     @JsonIgnore
