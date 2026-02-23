@@ -16,12 +16,14 @@ public class SubscriptionScheduler {
 
   // SaaS plan expiration
   @Scheduled(cron = "0 0 2 * * ?") // 2 AM
+  @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "expireSaasSubscriptions", lockAtLeastFor = "5m", lockAtMostFor = "10m")
   public void expireSaasSubscriptions() {
     subscriptionCleanupService.expireSubscriptions();
   }
 
   // User subscription reminders
   @Scheduled(cron = "0 0 9 * * ?") // 9 AM
+  @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "sendRenewalReminders", lockAtLeastFor = "5m", lockAtMostFor = "10m")
   public void sendRenewalReminders() {
     userSubscriptionReminder.sendRenewalNotification();
   }

@@ -45,6 +45,10 @@ public class TenantSubscription {
 
     private LocalDateTime updatedAt;
 
+    @Column(name = "reminder_status")
+    @Builder.Default
+    private Integer reminderStatus = 0;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

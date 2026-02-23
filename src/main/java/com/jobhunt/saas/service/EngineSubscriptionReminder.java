@@ -27,7 +27,8 @@ public class EngineSubscriptionReminder {
      * Runs daily at 9:00 AM to send reminder emails to Tenants
      * 7 days and 1 day before their Engine plan expires.
      */
-    @Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
+    @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "sendEngineRenewalNotifications", lockAtLeastFor = "5m", lockAtMostFor = "10m")
     @Transactional
     public void sendEngineRenewalNotifications() {
         log.info("Starting Daily Engine Plan Reminder Job...");
@@ -38,24 +39,26 @@ public class EngineSubscriptionReminder {
         for (TenantSubscription sub : activeSubs) {
             LocalDateTime expireDate = sub.getExpireDate();
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime sevenDaysFromNow = now.plusDays(7);
-            LocalDateTime oneDayFromNow = now.plusDays(1);
 
-            // Check if expiring in exactly 7 days (matching the day)
-            if (isSameDay(sevenDaysFromNow, expireDate)) {
-                sendEmailToTenantAdmin(sub, 7);
-            }
-            // Check if expiring in exactly 1 day (matching the day)
-            else if (isSameDay(oneDayFromNow, expireDate)) {
-                sendEmailToTenantAdmin(sub, 1);
+            if (expireDate == null)
+                continue;
+
+            long daysLeft = java.time.temporal.ChronoUnit.DAYS.between(now.toLocalDate(), expireDate.toLocalDate());
+
+            Integer status = sub.getReminderStatus();
+            if (status == null)
+                status = 0;
+
+            if (daysLeft <= 7 && daysLeft > 1 && status < 1) {
+                sendEmailToTenantAdmin(sub, (int) daysLeft);
+                sub.setReminderStatus(1);
+                tenantSubscriptionRepo.save(sub);
+            } else if (daysLeft <= 1 && daysLeft >= 0 && status < 2) {
+                sendEmailToTenantAdmin(sub, (int) daysLeft);
+                sub.setReminderStatus(2);
+                tenantSubscriptionRepo.save(sub);
             }
         }
-    }
-
-    private boolean isSameDay(LocalDateTime date1, LocalDateTime date2) {
-        if (date1 == null || date2 == null)
-            return false;
-        return date1.toLocalDate().isEqual(date2.toLocalDate());
     }
 
     private void sendEmailToTenantAdmin(TenantSubscription sub, int daysLeft) {
