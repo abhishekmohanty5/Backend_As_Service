@@ -42,6 +42,7 @@ public class AuthService {
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
         loginResponse.setEmail(email);
+        loginResponse.setRole(user.getRole());
         return loginResponse;
     }
 }

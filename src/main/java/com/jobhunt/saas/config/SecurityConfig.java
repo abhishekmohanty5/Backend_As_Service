@@ -35,9 +35,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/public", "/error").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/subscriptions/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/**", "/api/public", "/api/v1/**", "/error").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/developer/**").hasAnyRole("SUPER_ADMIN", "TENANT_ADMIN")
+                        .requestMatchers("/api/subscriptions/**").hasAnyRole("SUPER_ADMIN", "TENANT_ADMIN")
                         .requestMatchers("/api/dashboard", "/api/dashboard/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
@@ -74,7 +75,8 @@ public class SecurityConfig {
         }
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With",
+                "X-API-CLIENT-ID", "X-API-CLIENT-SECRET"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 

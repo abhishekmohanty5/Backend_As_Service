@@ -2,6 +2,8 @@ server:
   port: ${PORT:${SERVER_PORT:8080}}
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: saas
 
@@ -13,7 +15,6 @@ spring:
 
   autoconfigure:
     exclude:
-      - org.springframework.ai.autoconfigure.google.genai.GoogleGenAiAutoConfiguration
 
   jpa:
     hibernate:
@@ -44,9 +45,12 @@ spring:
           writetimeout: 5000
 
   ai:
-    google:
-      genai:
-        api-key: ${GEMINI_API_KEY:}
+    vertex:
+      ai:
+        gemini:
+          project-id: ${VERTEX_AI_PROJECT_ID:subsphere-demo}
+          location: ${VERTEX_AI_LOCATION:us-central1}
+          api-key: ${GEMINI_API_KEY:}
 
 
 application:

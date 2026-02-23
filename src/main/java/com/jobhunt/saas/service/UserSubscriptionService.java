@@ -5,7 +5,7 @@ import com.jobhunt.saas.dto.SubscriptionStatsDto;
 import com.jobhunt.saas.dto.UserSubscriptionDto;
 
 import com.jobhunt.saas.entity.*;
-import com.jobhunt.saas.repository.SubscriptionCategoryRepo;
+import com.jobhunt.saas.repository.TenantPlanRepo;
 import com.jobhunt.saas.repository.UserRepo;
 import com.jobhunt.saas.repository.UserSubscriptionRepo;
 import jakarta.transaction.Transactional;
@@ -23,30 +23,27 @@ import java.util.List;
 public class UserSubscriptionService {
 
     private final UserSubscriptionRepo userSubscriptionRepo;
-    private final SubscriptionCategoryRepo subscriptionCategoryRepo;
+    private final TenantPlanRepo tenantPlanRepo;
     private final UserRepo userRepo;
     private final AuthContext authContext;
 
-
-    //Service -1
+    // Service -1
 
     @Transactional
-    public void createSubscription(UserSubscriptionDto requestDto){
+    public void createSubscription(UserSubscriptionDto requestDto) {
 
         Long userId = authContext.getCurrentUserId();
 
         Users user = userRepo.findById(userId).orElseThrow(
-                ()-> new RuntimeException("User not found")
-        );
+                () -> new RuntimeException("User not found"));
 
-        Long category_id=requestDto.getCategory().getId();
+        Long tenantPlanId = requestDto.getTenantPlanId();
 
-        subscriptionCategoryRepo.findById(category_id).orElseThrow(
-                ()-> new RuntimeException("Invalid subscription category")
-        );
+        TenantPlan tenantPlan = tenantPlanRepo.findById(tenantPlanId).orElseThrow(
+                () -> new RuntimeException("Invalid tenant plan"));
 
         LocalDate startDate = requestDto.getStartDate();
-        LocalDate nextBillingDate = getNextBillingDate(startDate,requestDto.getBillingCycle());
+        LocalDate nextBillingDate = getNextBillingDate(startDate, requestDto.getBillingCycle());
 
         UserSubscription userSubscription = UserSubscription.builder()
                 .user(user)
@@ -54,7 +51,7 @@ public class UserSubscriptionService {
                 .notes(requestDto.getNotes())
                 .amount(requestDto.getAmount())
                 .status(SubscriptionStatus.ACTIVE)
-                .subscriptionCategory(requestDto.getCategory())
+                .tenantPlan(tenantPlan)
                 .startDate(startDate)
                 .nextBillingDate(nextBillingDate)
                 .billingCycle(requestDto.getBillingCycle())
@@ -63,56 +60,52 @@ public class UserSubscriptionService {
         userSubscriptionRepo.save(userSubscription);
     }
 
-    //get users all Subscriptions
-    //Service -2
+    // get users all Subscriptions
+    // Service -2
 
-    public List<UserSubscription> getUserSubscriptions(){
+    public List<UserSubscription> getUserSubscriptions() {
         Long userId = authContext.getCurrentUserId();
 
         Users user = userRepo.findById(userId).orElseThrow(
-                ()-> new RuntimeException("User not found")
-        );
+                () -> new RuntimeException("User not found"));
 
         return userSubscriptionRepo.findByUserId(user.getId());
     }
 
-    //get Only Active Subscriptions
+    // get Only Active Subscriptions
 
-    public List<UserSubscription> getActiveSubscription(){
+    public List<UserSubscription> getActiveSubscription() {
 
         Long userId = authContext.getCurrentUserId();
 
         Users user = userRepo.findById(userId).orElseThrow(
-                ()-> new RuntimeException("User not found")
-        );
+                () -> new RuntimeException("User not found"));
 
-        return userSubscriptionRepo.findByUserIdAndStatus(userId,SubscriptionStatus.ACTIVE);
+        return userSubscriptionRepo.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
     }
 
-    //get Subscriptions By Category
+    // get Subscriptions By TenantPlan
 
-    public List<UserSubscription> getSubscriptionByCategory(Long categoryId){
-
-        Long  userId = authContext.getCurrentUserId();
-
-        subscriptionCategoryRepo.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Invalid subscription category"));
-
-        return userSubscriptionRepo.findByUserIdAndSubscriptionCategoryId(userId,categoryId);
-    }
-
-    //Update Subscription
-    @Transactional
-    public void updateSubscription(Long id, UserSubscriptionDto dto){
+    public List<UserSubscription> getSubscriptionByTenantPlan(Long tenantPlanId) {
 
         Long userId = authContext.getCurrentUserId();
 
+        tenantPlanRepo.findById(tenantPlanId)
+                .orElseThrow(() -> new RuntimeException("Invalid tenant plan"));
+
+        return userSubscriptionRepo.findByUserIdAndTenantPlanId(userId, tenantPlanId);
+    }
+
+    // Update Subscription
+    @Transactional
+    public void updateSubscription(Long id, UserSubscriptionDto dto) {
+
+        Long userId = authContext.getCurrentUserId();
 
         UserSubscription subscription = userSubscriptionRepo.findById(id).orElseThrow(
-                ()-> new RuntimeException("Invalid subscription")
-        );
+                () -> new RuntimeException("Invalid subscription"));
 
-        if(! subscription.getUser().getId().equals(userId)){
+        if (!subscription.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized: This subscription does not belong to you");
         }
 
@@ -120,22 +113,21 @@ public class UserSubscriptionService {
         subscription.setNotes(dto.getNotes());
         subscription.setAmount(dto.getAmount());
         subscription.setBillingCycle(dto.getBillingCycle());
-        subscription.setNextBillingDate(getNextBillingDate(dto.getStartDate(),dto.getBillingCycle()));
+        subscription.setNextBillingDate(getNextBillingDate(dto.getStartDate(), dto.getBillingCycle()));
         subscription.setStartDate(dto.getStartDate());
 
     }
 
-    //Cancel Subscription
+    // Cancel Subscription
     @Transactional
-    public void cancelSubscription(Long id){
+    public void cancelSubscription(Long id) {
 
         Long userId = authContext.getCurrentUserId();
 
         UserSubscription subscription = userSubscriptionRepo.findById(id).orElseThrow(
-                ()-> new RuntimeException("Invalid subscription")
-        );
+                () -> new RuntimeException("Invalid subscription"));
 
-        if(! subscription.getUser().getId().equals(userId)){
+        if (!subscription.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized: This subscription does not belong to you");
         }
 
@@ -143,42 +135,39 @@ public class UserSubscriptionService {
 
     }
 
-    //delete Subscription
+    // delete Subscription
 
     @Transactional
-    public void deleteSubscription(Long id){
+    public void deleteSubscription(Long id) {
 
         Long userId = authContext.getCurrentUserId();
 
         UserSubscription subscription = userSubscriptionRepo.findById(id).orElseThrow(
-                ()-> new RuntimeException("Invalid subscription")
-        );
+                () -> new RuntimeException("Invalid subscription"));
 
-        if(! subscription.getUser().getId().equals(userId)){
+        if (!subscription.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized: This subscription does not belong to you");
         }
 
         userSubscriptionRepo.delete(subscription);
     }
 
-    //Renewal in next N days
+    // Renewal in next N days
     @Transactional
-    public List<UserSubscription> getUpcomingRenewals(int days){
+    public List<UserSubscription> getUpcomingRenewals(int days) {
 
         Long userId = authContext.getCurrentUserId();
         LocalDate startDate = LocalDate.now();
-        LocalDate endDate= startDate.plusDays(days);
+        LocalDate endDate = startDate.plusDays(days);
 
-     return userSubscriptionRepo.
-             findByUserIdAndNextBillingDateBetween(userId,startDate,endDate);
+        return userSubscriptionRepo.findByUserIdAndNextBillingDateBetween(userId, startDate, endDate);
     }
 
     public SubscriptionStatsDto getSubscriptionStats() {
         Long userId = authContext.getCurrentUserId();
 
-        List<UserSubscription> activeSubs =
-                userSubscriptionRepo.findByUserIdAndStatus(
-                        userId, SubscriptionStatus.ACTIVE);
+        List<UserSubscription> activeSubs = userSubscriptionRepo.findByUserIdAndStatus(
+                userId, SubscriptionStatus.ACTIVE);
 
         BigDecimal monthlyTotal = activeSubs.stream()
                 .filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY)
@@ -190,30 +179,26 @@ public class UserSubscriptionService {
                 .map(s -> s.getAmount().divide(
                         BigDecimal.valueOf(12),
                         2,
-                        RoundingMode.HALF_UP
-                ))
+                        RoundingMode.HALF_UP))
 
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new SubscriptionStatsDto(
                 monthlyTotal.add(yearlyAsMonthly),
-                activeSubs.size()
-        );
+                activeSubs.size());
     }
-
 
     public List<String> getSubscriptionInsights() {
 
         Long userId = authContext.getCurrentUserId();
 
-        List<UserSubscription> subs =
-                userSubscriptionRepo.findByUserIdAndStatus(
-                        userId, SubscriptionStatus.ACTIVE);
+        List<UserSubscription> subs = userSubscriptionRepo.findByUserIdAndStatus(
+                userId, SubscriptionStatus.ACTIVE);
 
         List<String> insights = new ArrayList<>();
 
         long entertainmentCount = subs.stream()
-                .filter(s -> s.getSubscriptionCategory().getName().equalsIgnoreCase("Entertainment"))
+                .filter(s -> s.getTenantPlan().getName().equalsIgnoreCase("Entertainment"))
                 .count();
 
         if (entertainmentCount > 2) {
@@ -221,15 +206,15 @@ public class UserSubscriptionService {
         }
 
         subs.stream()
-                .filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY && s.getAmount().compareTo(BigDecimal.valueOf(500)) > 0)
+                .filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY
+                        && s.getAmount().compareTo(BigDecimal.valueOf(500)) > 0)
                 .forEach(s -> insights.add(
-                        "Switch " + s.getSubscriptionName() + " to yearly plan to save money."
-                ));
+                        "Switch " + s.getSubscriptionName() + " to yearly plan to save money."));
 
         return insights;
     }
 
-    //helper -1
+    // helper -1
 
     private LocalDate getNextBillingDate(LocalDate startingDate, BillingCycle billingCycle) {
         switch (billingCycle) {

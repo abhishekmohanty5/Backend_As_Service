@@ -1,6 +1,7 @@
 package com.jobhunt.saas.entity;
 
 public enum Role {
-    ROLE_ADMIN,
+    ROLE_SUPER_ADMIN,
+    ROLE_TENANT_ADMIN,
     ROLE_USER
 }
