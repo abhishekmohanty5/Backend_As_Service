@@ -24,11 +24,15 @@ public class AiChurnService {
     private final UserSubscriptionRepo userSubscriptionRepo;
     private final TenantSubscriptionRepo tenantSubscriptionRepo;
 
+    @org.springframework.beans.factory.annotation.Value("${saas.churn.discount-code:KEEP20}")
+    private String discountCode;
+
     /**
      * Runs daily at 10:00 AM to predict user churn.
      * Only applies to end-users of Tenants on the PREMIUM plan.
      */
     @Scheduled(cron = "0 0 10 * * ?")
+    @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "predictAndPreventChurn", lockAtLeastFor = "5m", lockAtMostFor = "10m")
     @Transactional
     public void predictAndPreventChurn() {
         log.info("Starting AI Churn Prediction Job...");
@@ -56,13 +60,13 @@ public class AiChurnService {
 
                 // Only PREMIUM tenants get the AI churn discount feature
                 if ("PREMIUM".equals(enginePlan)) {
-                    sendDiscountEmailOnBehalfOfTenant(user, sub);
+                    sendDiscountEmailOnBehalfOfTenant(user, sub, discountCode);
                 }
             }
         }
     }
 
-    private void sendDiscountEmailOnBehalfOfTenant(Users user, UserSubscription sub) {
+    private void sendDiscountEmailOnBehalfOfTenant(Users user, UserSubscription sub, String code) {
         String tenantName = user.getTenant() != null ? user.getTenant().getName() : "us";
         String email = user.getEmail();
 
@@ -71,7 +75,7 @@ public class AiChurnService {
                 "We noticed your " + sub.getSubscriptionName() + " subscription is expiring soon.\n\n" +
                 "We'd love to keep you around! Here is an exclusive 20% discount code to use on your next renewal:\n\n"
                 +
-                "Code: KEEP20\n\n" +
+                "Code: " + code + "\n\n" +
                 "Thanks,\nThe " + tenantName + " Team";
 
         emailService.sendEmail(email, subject, body);

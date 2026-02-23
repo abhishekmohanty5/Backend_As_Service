@@ -22,6 +22,7 @@ public class EngineSubscriptionCleanup {
      * Runs every day at midnight to check if Engine Plans (Tenants) have expired.
      */
     @Scheduled(cron = "0 0 0 * * ?")
+    @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "checkAndExpireTenantPlans", lockAtLeastFor = "5m", lockAtMostFor = "10m")
     @Transactional
     public void checkAndExpireTenantPlans() {
         log.info("Starting Daily Engine Plan Cleanup Job...");
