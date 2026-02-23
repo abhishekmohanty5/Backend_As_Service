@@ -101,6 +101,37 @@ public class TenantPublicApiController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/tenant-plans")
+    public ResponseEntity<AppResponse<java.util.List<TenantPlanResponseDto>>> getPublicTenantPlans() {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            throw new RuntimeException("Unauthorized API access");
+        }
+
+        // Only return ACTIVE plans to the public, preventing access to sensitive/draft
+        // plans
+        java.util.List<TenantPlan> plans = tenantPlanRepo.findByTenantIdAndActiveTrue(tenantId);
+
+        java.util.List<TenantPlanResponseDto> dtos = plans.stream().map(p -> TenantPlanResponseDto.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .price(p.getPrice())
+                .billingCycle(p.getBillingCycle())
+                .features(p.getFeatures())
+                .active(p.isActive())
+                .build()).toList();
+
+        AppResponse<java.util.List<TenantPlanResponseDto>> response = AppResponse.<java.util.List<TenantPlanResponseDto>>builder()
+                .message("Successfully retrieved public Tenant Plans")
+                .data(dtos)
+                .status(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/users/register")
     public ResponseEntity<AppResponse<TenantUserDto>> registerEndUser(@RequestBody EndUserRegRequest request) {
         Long tenantId = TenantContext.getTenantId();
