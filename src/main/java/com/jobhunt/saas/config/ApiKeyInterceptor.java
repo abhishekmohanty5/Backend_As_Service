@@ -35,6 +35,11 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
         String clientId = request.getHeader("X-API-CLIENT-ID");
         String clientSecret = request.getHeader("X-API-CLIENT-SECRET");
 
+        // 🔑 Allow bypass if already authenticated via JWT (Tenant Admin in Dashboard)
+        if (TenantContext.getTenantId() != null) {
+            return true;
+        }
+
         if (clientId == null || clientSecret == null) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(),
                     "Missing API Credentials. Please provide X-API-CLIENT-ID and X-API-CLIENT-SECRET headers.");

@@ -25,6 +25,7 @@ public class DashboardService {
         private final TenantRepo tenantRepo;
         private final UserSubscriptionRepo userSubscriptionRepo;
 
+        @jakarta.transaction.Transactional
         public DashboardDto getDashboard() {
 
                 // 1. Get current logged-in user
@@ -39,7 +40,7 @@ public class DashboardService {
                 LocalDateTime planExpiryDate = null;
                 long daysRemaining = 0;
 
-                if (tenant != null && tenant.getPlan() != null && tenant.getCreatedAt() != null) {
+                if (tenant != null && tenant.getCreatedAt() != null && tenant.getPlan() != null) {
                         planExpiryDate = tenant.getCreatedAt().plusDays(tenant.getPlan().getDurationInDays());
                         daysRemaining = ChronoUnit.DAYS.between(LocalDateTime.now(), planExpiryDate);
                         if (daysRemaining < 0)
@@ -52,27 +53,28 @@ public class DashboardService {
                                 .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE).size();
 
                 // 5. Build and return dashboard response
-                String tenantName = tenant != null && tenant.getName() != null ? tenant.getName() : "My Startup";
-                String currentPlan = tenant != null && tenant.getPlan() != null ? tenant.getPlan().getName()
+                String tenantName = (tenant != null && tenant.getName() != null) ? tenant.getName() : "My Startup";
+                String currentPlanNm = (tenant != null && tenant.getPlan() != null) ? tenant.getPlan().getName()
                                 : "Free Trial";
-                java.math.BigDecimal planPrice = tenant != null && tenant.getPlan() != null
+                java.math.BigDecimal planPrice = (tenant != null && tenant.getPlan() != null)
                                 ? tenant.getPlan().getPrice()
                                 : java.math.BigDecimal.ZERO;
-                String status = tenant != null && tenant.getStatus() != null ? tenant.getStatus().name() : "INACTIVE";
-                LocalDateTime memberSince = tenant != null && tenant.getCreatedAt() != null ? tenant.getCreatedAt()
+                String status = (tenant != null && tenant.getStatus() != null) ? tenant.getStatus().name() : "INACTIVE";
+                LocalDateTime memberSince = (tenant != null && tenant.getCreatedAt() != null) ? tenant.getCreatedAt()
                                 : LocalDateTime.now();
 
                 return DashboardDto.builder()
                                 .tenantName(tenantName)
-                                .currentPlan(currentPlan)
+                                .currentPlan(currentPlanNm)
                                 .planPrice(planPrice)
                                 .status(status)
                                 .memberSince(memberSince)
                                 .planExpiryDate(planExpiryDate)
                                 .daysRemaining(daysRemaining)
-                                .clientId(tenant.getClientId())
-                                .clientSecret(tenant.getClientSecret())
-                                .apiCallCount(tenant.getApiCallCount())
+                                .clientId(tenant != null ? tenant.getClientId() : null)
+                                .clientSecret(tenant != null ? tenant.getClientSecret() : null)
+                                .apiCallCount(tenant != null ? tenant.getApiCallCount() : 0L)
+                                .apiCallLimit(50000L) // Default limit
                                 .authServiceEnabled(true)
                                 .subscriptionServiceEnabled(true)
                                 .emailNotificationsEnabled(true)

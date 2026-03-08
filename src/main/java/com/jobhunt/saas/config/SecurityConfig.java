@@ -35,10 +35,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/public", "/api/v1/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/public", "/error").permitAll()
+                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login", "/api/v1/tenant-plans")
+                        .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/developer/**").hasAnyRole("SUPER_ADMIN", "TENANT_ADMIN")
-                        .requestMatchers("/api/subscriptions/**").hasAnyRole("SUPER_ADMIN", "TENANT_ADMIN")
+                        .requestMatchers("/api/developer/**", "/api/tenant-admin/**")
+                        .hasRole("TENANT_ADMIN")
+                        .requestMatchers("/api/user-Subscriptions/**").hasAnyRole("TENANT_ADMIN", "USER")
                         .requestMatchers("/api/dashboard", "/api/dashboard/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
@@ -67,8 +70,7 @@ public class SecurityConfig {
 
         String allowedOrigins = System.getenv("ALLOWED_ORIGINS");
         if (allowedOrigins == null || allowedOrigins.isEmpty() || allowedOrigins.equals("*")) {
-            // If *, we must Use setAllowedOriginPatterns for compatibility with
-            // allowCredentials
+
             configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         } else {
             configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));

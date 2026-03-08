@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/public")
+@RequestMapping("/api/public")
 @RequiredArgsConstructor
 public class PublicController {
 
@@ -28,8 +28,7 @@ public class PublicController {
                 "success",
                 plans,
                 200,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         return ResponseEntity.ok(response);
     }

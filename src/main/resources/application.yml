@@ -44,18 +44,10 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
-  ai:
-    vertex:
-      ai:
-        gemini:
-          project-id: ${VERTEX_AI_PROJECT_ID:subsphere-demo}
-          location: ${VERTEX_AI_LOCATION:us-central1}
-          api-key: ${GEMINI_API_KEY:}
 
 
 application:
   security:
     jwt:
-      # Valid Base64-encoded 256-bit key (used as fallback if JWT_SECRET is not set in Railway)
       secret-key: ${JWT_SECRET:}
-      expiration: 1800000
+      expiration: ${JWT_EXPIRATION:3600000}

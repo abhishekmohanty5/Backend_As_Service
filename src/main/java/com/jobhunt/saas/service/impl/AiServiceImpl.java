@@ -2,40 +2,74 @@ package com.jobhunt.saas.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobhunt.saas.dto.TenantPlanDto;
-import com.jobhunt.saas.entity.TenantPlan;
 import com.jobhunt.saas.entity.UserSubscription;
 import com.jobhunt.saas.repository.TenantPlanRepo;
 import com.jobhunt.saas.repository.UserSubscriptionRepo;
 import com.jobhunt.saas.service.AiService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class AiServiceImpl implements AiService {
 
-        private final ChatClient chatClient;
         private final UserSubscriptionRepo userSubscriptionRepo;
         private final TenantPlanRepo tenantPlanRepo;
         private final ObjectMapper objectMapper;
+        private final RestClient restClient;
 
-        public AiServiceImpl(ChatClient.Builder chatClientBuilder,
-                        UserSubscriptionRepo userSubscriptionRepo,
+        @Value("${gemini.api.key:}")
+        private String geminiApiKey;
+
+        private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent";
+
+        public AiServiceImpl(UserSubscriptionRepo userSubscriptionRepo,
                         TenantPlanRepo tenantPlanRepo,
-                        ObjectMapper objectMapper) {
-                this.chatClient = chatClientBuilder.build();
+                        ObjectMapper objectMapper,
+                        RestClient.Builder restClientBuilder) {
                 this.userSubscriptionRepo = userSubscriptionRepo;
                 this.tenantPlanRepo = tenantPlanRepo;
                 this.objectMapper = objectMapper;
+                this.restClient = restClientBuilder.build();
+        }
+
+        /**
+         * Calls the Gemini REST API with a given prompt and returns the text response.
+         */
+        private String callGemini(String prompt) {
+                String url = GEMINI_URL + "?key=" + geminiApiKey;
+
+                Map<String, Object> requestBody = Map.of(
+                                "contents", List.of(Map.of(
+                                                "parts", List.of(Map.of("text", prompt)))));
+
+                try {
+                        String responseJson = restClient.post()
+                                        .uri(url)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .body(requestBody)
+                                        .retrieve()
+                                        .body(String.class);
+
+                        JsonNode root = objectMapper.readTree(responseJson);
+                        return root.path("candidates").get(0)
+                                        .path("content").path("parts").get(0)
+                                        .path("text").asText();
+
+                } catch (Exception e) {
+                        log.error("Gemini API call failed: {}", e.getMessage(), e);
+                        throw new RuntimeException("Failed to generate content: " + e.getMessage());
+                }
         }
 
         @Override
@@ -67,45 +101,44 @@ public class AiServiceImpl implements AiService {
                                                 """,
                                 subscriptions.size(), activeCount, cancelledCount, totalRevenue);
 
-                return chatClient.prompt()
-                                .user(prompt)
-                                .call()
-                                .content();
+                return callGemini(prompt);
         }
 
         @Override
         public List<TenantPlanDto> generatePricingPlans(String businessDescription) {
-                log.info("Generating AI Pricing Plans for business: {}", businessDescription);
+                log.info("Generating AI Pricing Plans for: {}", businessDescription);
 
-                String prompt = String.format("""
-                                You are a SaaS monetization expert. The user has described their business as: "%s".
-                                Generate 3 subscription pricing plans (e.g. Basic, Pro, Enterprise) for them.
-                                Respond STRICTLY with a JSON array where each object has the following keys:
-                                - planName (String, e.g. "Basic")
-                                - description (String, short description of the plan)
-                                - price (Number, e.g. 9.99)
-                                - billingCycle (String, MUST be exactly "MONTHLY" or "YEARLY")
+                String prompt = String.format(
+                                """
+                                                You are an expert SaaS Pricing Strategist. Help a business design their subscription pricing tiers.
 
-                                Do not include any Markdown formatting like ```json, just output the raw JSON array.
-                                """, businessDescription);
+                                                Business Description: %s
 
-                String jsonResponse = chatClient.prompt()
-                                .user(prompt)
-                                .call()
-                                .content();
+                                                Generate exactly 3 subscription pricing plans (e.g. Basic, Pro, Enterprise).
+                                                Respond STRICTLY with a raw JSON array. No markdown, no extra text, just the JSON array.
+                                                Each object must have these exact keys:
+                                                - name (String)
+                                                - description (String, one short sentence)
+                                                - price (Number, e.g. 999.00)
+                                                - billingCycle (String, must be exactly "MONTHLY" or "YEARLY")
+                                                - features (String, 3-5 key features separated by commas)
+                                                """,
+                                businessDescription);
+
+                String rawResponse = callGemini(prompt);
 
                 try {
-                        // Remove potential markdown blocks if the AI model disobeys the prompt
-                        if (jsonResponse.startsWith("```json")) {
-                                jsonResponse = jsonResponse.substring(7, jsonResponse.length() - 3);
-                        } else if (jsonResponse.startsWith("```")) {
-                                jsonResponse = jsonResponse.substring(3, jsonResponse.length() - 3);
+                        // Robustly extract JSON array even if model adds extra text
+                        int startIndex = rawResponse.indexOf("[");
+                        int endIndex = rawResponse.lastIndexOf("]");
+                        if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex) {
+                                throw new RuntimeException("No valid JSON array found in AI response.");
                         }
-
+                        String jsonResponse = rawResponse.substring(startIndex, endIndex + 1);
                         return objectMapper.readValue(jsonResponse, new TypeReference<List<TenantPlanDto>>() {
                         });
                 } catch (JsonProcessingException e) {
-                        log.error("Failed to parse AI generated pricing plans: {}", jsonResponse, e);
+                        log.error("Failed to parse AI response: {}", rawResponse, e);
                         throw new RuntimeException("AI failed to generate valid pricing plans. Please try again.");
                 }
         }
@@ -116,8 +149,6 @@ public class AiServiceImpl implements AiService {
 
                 List<UserSubscription> userSubscriptions = userSubscriptionRepo.findByUserId(userId);
 
-                // Filter out subscriptions that don't belong to the tenant to ensure data
-                // isolation
                 List<UserSubscription> currentTenantSubs = userSubscriptions.stream()
                                 .filter(sub -> sub.getUser().getTenant().getId().equals(tenantId))
                                 .toList();
@@ -136,7 +167,7 @@ public class AiServiceImpl implements AiService {
 
                 String prompt = String.format(
                                 """
-                                                You are an AI Churn Prediction model for a SaaS platform. Analyze the following user's subscription history and calculate their churn risk.
+                                                You are an AI Churn Prediction model for a SaaS platform. Analyze the following user subscription history.
 
                                                 User Subscription History:
                                                 %s
@@ -150,9 +181,6 @@ public class AiServiceImpl implements AiService {
                                 subHistory, latestSub.getNextBillingDate(),
                                 latestSub.getNotes() != null ? latestSub.getNotes() : "None");
 
-                return chatClient.prompt()
-                                .user(prompt)
-                                .call()
-                                .content();
+                return callGemini(prompt);
         }
 }

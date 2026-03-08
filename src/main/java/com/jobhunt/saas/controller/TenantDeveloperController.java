@@ -116,8 +116,6 @@ public class TenantDeveloperController {
                 return ResponseEntity.ok(response);
         }
 
-        // --- END USERS AND SUBSCRIPTIONS ---
-
         @GetMapping("/users")
         public ResponseEntity<AppResponse<List<TenantUserDto>>> getTenantUsers() {
                 Long tenantId = TenantContext.getTenantId();

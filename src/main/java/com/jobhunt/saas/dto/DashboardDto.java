@@ -31,6 +31,7 @@ public class DashboardDto {
 
     // Usage
     private Long apiCallCount;
+    private Long apiCallLimit;
 
     // Services Enabled
     private boolean authServiceEnabled;

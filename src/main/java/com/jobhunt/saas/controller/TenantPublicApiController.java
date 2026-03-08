@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
-import java.math.BigDecimal;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -35,6 +33,7 @@ public class TenantPublicApiController {
     private final UserSubscriptionRepo userSubscriptionRepo;
     private final PasswordEncoder passwordEncoder;
     private final AiService aiService;
+    private final com.jobhunt.saas.auth.JWTService jwtService;
 
     @GetMapping("/ai/analytics")
     public ResponseEntity<AppResponse<String>> getSubscriptionAnalytics() {
@@ -63,16 +62,25 @@ public class TenantPublicApiController {
             throw new RuntimeException("Unauthorized API access");
         }
 
-        java.util.List<TenantPlanDto> plans = aiService.generatePricingPlans(request.getBusinessDescription());
+        try {
+            java.util.List<TenantPlanDto> plans = aiService.generatePricingPlans(request.getBusinessDescription());
 
-        AppResponse<java.util.List<TenantPlanDto>> response = AppResponse.<java.util.List<TenantPlanDto>>builder()
-                .message("Successfully generated AI Pricing Plans")
-                .data(plans)
-                .status(HttpStatus.OK.value())
-                .timestamp(LocalDateTime.now())
-                .build();
+            AppResponse<java.util.List<TenantPlanDto>> response = AppResponse.<java.util.List<TenantPlanDto>>builder()
+                    .message("Successfully generated AI Pricing Plans")
+                    .data(plans)
+                    .status(HttpStatus.OK.value())
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            AppResponse<java.util.List<TenantPlanDto>> errorResponse = AppResponse.<java.util.List<TenantPlanDto>>builder()
+                    .message("AI Generation failed: " + e.getMessage())
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @GetMapping("/ai/predict-churn/{userId}")
@@ -170,6 +178,39 @@ public class TenantPublicApiController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/users/login")
+    public ResponseEntity<AppResponse<LoginResponse>> loginEndUser(@RequestBody LoginRequest request) {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            throw new RuntimeException("Unauthorized API access");
+        }
+
+        Users user = userRepo.findByEmailAndTenant_Id(request.getEmail(), tenantId);
+        if (user == null) {
+            throw new RuntimeException("Invalid credentials or user not found in this tenant.");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials.");
+        }
+
+        String token = jwtService.generateToken(user.getEmail(), tenantId);
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(token);
+        loginResponse.setEmail(user.getEmail());
+        loginResponse.setRole(user.getRole());
+
+        AppResponse<LoginResponse> response = AppResponse.<LoginResponse>builder()
+                .message("Successfully logged in End User")
+                .data(loginResponse)
+                .status(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/subscriptions")

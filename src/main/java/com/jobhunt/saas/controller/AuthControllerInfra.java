@@ -16,21 +16,21 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthControllerInfra {
 
     @Autowired
     private UserService userService;
     @Autowired
     AuthService authService;
 
-    @PostMapping("/reg")
+    @PostMapping("/register")
     public ResponseEntity<AppResponse<RegResponse>> regUser(@Valid @RequestBody RegRequest regRequest){
       RegResponse response= userService.addUser(regRequest);
       AppResponse<RegResponse> appResponse =
               new AppResponse<>("Success",response,200, LocalDateTime.now());
       return ResponseEntity.ok(appResponse);
     }
-    @PostMapping("/log")
+    @PostMapping("/login")
     public ResponseEntity<AppResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
         LoginResponse response= authService.login(loginRequest);
         AppResponse<LoginResponse> body=
