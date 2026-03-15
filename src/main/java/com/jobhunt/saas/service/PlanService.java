@@ -38,7 +38,7 @@ public class PlanService {
 
 
     @CacheEvict(cacheNames = "Plans", allEntries = true)
-    public void activePlan(Long id) {
+    public void activatePlan(Long id) {
         Plan plan = planRepo.findById(id)
                 .orElseThrow(() ->
                         new IllegalStateException("Plan with ID " + id + " not found"));
@@ -49,7 +49,7 @@ public class PlanService {
     }
 
     @CacheEvict(cacheNames = "Plans", allEntries = true)
-    public void inactivePlan(Long id) {
+    public void deactivatePlan(Long id) {
         Plan plan=planRepo.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Plan with ID " + id + " not found"));
 

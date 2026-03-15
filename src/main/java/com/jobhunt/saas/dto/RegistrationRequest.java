@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class RegRequest {
+public class RegistrationRequest {
 
     @NotBlank(message = "Tenant Name Cannot Be Blank")
     private String tenantName;
@@ -20,7 +20,7 @@ public class RegRequest {
     private String email;
 
     @NotBlank
-    @Size(min = 2, max = 20,message = "Password must be between 8 and 20 characters")
+    @Size(min = 8, max = 20,message = "Password must be between 8 and 20 characters")
     @Pattern(
             regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
             message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
