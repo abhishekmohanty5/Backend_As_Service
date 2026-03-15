@@ -37,8 +37,7 @@ public class UserService {
 
         // 2. Create Tenant
         Tenant tenant = new Tenant();
-<<<<<<< HEAD
-        tenant.setName(requestDto.getTenantName());
+        tenant.setName(registrationRequest.getTenantName());
         tenant = tenantRepo.save(tenant);
 
         // 2.5 Create Engine Subscription
@@ -49,12 +48,6 @@ public class UserService {
         ts.setStartDate(LocalDateTime.now());
         ts.setExpireDate(LocalDateTime.now().plusDays(defaultPlan.getDurationInDays()));
         tenantSubscriptionRepo.save(ts);
-=======
-        tenant.setName(registrationRequest.getTenantName());
-        tenant.setPlan(defaultPlan);
-        tenant.setStatus(SubscriptionStatus.ACTIVE);
-        tenantRepo.save(tenant);
->>>>>>> 0548ce46dba79041dabbb5c9a85f5e31e2afd07b
 
         if (userRepo.existsByEmail(registrationRequest.getEmail())) {
             throw new RuntimeException("Email already registered");
@@ -62,17 +55,10 @@ public class UserService {
 
         // 3. Create TENANT ADMIN User
         Users user = new Users();
-<<<<<<< HEAD
-        user.setUsername(requestDto.getUserName());
-        user.setEmail(requestDto.getEmail());
-        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-        user.setRole(Role.ROLE_TENANT_ADMIN);
-=======
         user.setUsername(registrationRequest.getUserName());
         user.setEmail(registrationRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
-        user.setRole(Role.ROLE_ADMIN);
->>>>>>> 0548ce46dba79041dabbb5c9a85f5e31e2afd07b
+        user.setRole(Role.ROLE_TENANT_ADMIN);
         user.setTenant(tenant);
 
         // 4. Save user
