@@ -42,10 +42,10 @@ public class SubscriptionService {
         // Check for User Has already Active Subscription
         subscriptionRepo
                 .findByUserIdAndTenantIdAndStatus(userId, tenantId, SubscriptionStatus.ACTIVE)
-                .ifPresent(sub -> {
-                    if (isExpired(sub)) {
-                        sub.setStatus(SubscriptionStatus.EXPIRED);
-                        subscriptionRepo.save(sub);
+                .ifPresent(existingSubscription -> {
+                    if (isExpired(existingSubscription)) {
+                        existingSubscription.setStatus(SubscriptionStatus.EXPIRED);
+                        subscriptionRepo.save(existingSubscription);
                     } else {
                         throw new IllegalStateException(
                                 "User already has an active subscription");
@@ -111,17 +111,17 @@ public class SubscriptionService {
     public Subscription getActiveSubscriptionForUser(Long userId) {
         Long tenantId = TenantContext.getTenantId();
 
-        Subscription sub = subscriptionRepo
+        Subscription subscription = subscriptionRepo
                 .findByUserIdAndTenantIdAndStatus(userId, tenantId, SubscriptionStatus.ACTIVE)
                 .orElseThrow(() -> new IllegalStateException("No active subscription found"));
 
-        if (isExpired(sub)) {
-            sub.setStatus(SubscriptionStatus.EXPIRED);
-            subscriptionRepo.save(sub);
+        if (isExpired(subscription)) {
+            subscription.setStatus(SubscriptionStatus.EXPIRED);
+            subscriptionRepo.save(subscription);
             throw new IllegalStateException("Subscription expired");
         }
 
-        return sub;
+        return subscription;
     }
 
     // Service get Current User Active Subscription

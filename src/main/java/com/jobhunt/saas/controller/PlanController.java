@@ -45,7 +45,7 @@ public class PlanController {
     @PutMapping("/{id}/activate")
     public ResponseEntity<AppResponse<String>> activatePlan(@PathVariable Long id) {
 
-        planService.activePlan(id);
+        planService.activatePlan(id);
 
         return ResponseEntity.ok(
                 new AppResponse<>("success", "Plan activated", 200, LocalDateTime.now())
@@ -55,7 +55,7 @@ public class PlanController {
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<AppResponse<String>> deactivatePlan(@PathVariable Long id) {
 
-        planService.inactivePlan(id);
+        planService.deactivatePlan(id);
 
         return ResponseEntity.ok(
                 new AppResponse<>("success", "Plan deactivated", 200, LocalDateTime.now())
