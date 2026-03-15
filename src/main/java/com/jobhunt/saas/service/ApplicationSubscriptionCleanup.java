@@ -4,12 +4,14 @@ import com.jobhunt.saas.entity.SubscriptionStatus;
 import com.jobhunt.saas.entity.UserSubscription;
 import com.jobhunt.saas.repository.UserSubscriptionRepo;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ApplicationSubscriptionCleanup {
 
@@ -26,7 +28,7 @@ public class ApplicationSubscriptionCleanup {
             expiredSubscriptions.forEach(sub -> sub.setStatus(SubscriptionStatus.EXPIRED));
 
             userSubscriptionRepo.saveAll(expiredSubscriptions);
-            System.out.println("Expired " + expiredSubscriptions.size() + " user subscriptions.");
+            log.info("Expired {} user subscriptions.", expiredSubscriptions.size());
         }
 
     }

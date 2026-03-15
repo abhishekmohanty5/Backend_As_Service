@@ -3,7 +3,7 @@ package com.jobhunt.saas.config;
 import com.jobhunt.saas.auth.JWTAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -31,6 +31,9 @@ public class SecurityConfig {
 
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${application.cors.default-origins}")
+    private String corsDefaultOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -43,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/developer/**", "/api/tenant-admin/**")
                         .hasRole("TENANT_ADMIN")
-                        .requestMatchers("/api/user-Subscriptions/**").hasAnyRole("TENANT_ADMIN", "USER")
+                        .requestMatchers("/api/user-subscriptions/**").hasAnyRole("TENANT_ADMIN", "USER")
                         .requestMatchers("/api/dashboard", "/api/dashboard/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
@@ -71,11 +74,15 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         String allowedOrigins = System.getenv("ALLOWED_ORIGINS");
-        if (allowedOrigins == null || allowedOrigins.isEmpty() || allowedOrigins.equals("*")) {
-
-            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
+            if (allowedOrigins.equals("*")) {
+                configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+            } else {
+                configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+            }
         } else {
-            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+            // Default to configured localhost origins when no ALLOWED_ORIGINS env var is set
+            configuration.setAllowedOrigins(Arrays.asList(corsDefaultOrigins.split(",")));
         }
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

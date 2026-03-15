@@ -18,11 +18,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Configuration
 @org.springframework.context.annotation.Profile("!test")
 public class DataInitializer {
@@ -47,7 +49,7 @@ public class DataInitializer {
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created FREE plan in Database");
+                log.info("✅ Created FREE plan in Database");
                 return planRepo.save(p);
             });
 
@@ -59,7 +61,7 @@ public class DataInitializer {
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created STARTER plan (₹499) in Database");
+                log.info("✅ Created STARTER plan (₹499) in Database");
                 return planRepo.save(p);
             });
             // Update price if it was previously seeded at old value
@@ -67,7 +69,7 @@ public class DataInitializer {
                 starterPlan.setPrice(BigDecimal.valueOf(499.00));
                 starterPlan.setUpdatedAt(LocalDateTime.now());
                 planRepo.save(starterPlan);
-                System.out.println("🔄 Updated STARTER plan price to ₹499");
+                log.info("🔄 Updated STARTER plan price to ₹499");
             }
 
             Plan proPlan = planRepo.findByName("PRO").orElseGet(() -> {
@@ -78,7 +80,7 @@ public class DataInitializer {
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created PRO plan (₹1499) in Database");
+                log.info("✅ Created PRO plan (₹1499) in Database");
                 return planRepo.save(p);
             });
             // Update price if it was previously seeded at old value
@@ -86,7 +88,7 @@ public class DataInitializer {
                 proPlan.setPrice(BigDecimal.valueOf(1499.00));
                 proPlan.setUpdatedAt(LocalDateTime.now());
                 planRepo.save(proPlan);
-                System.out.println("🔄 Updated PRO plan price to ₹1499");
+                log.info("🔄 Updated PRO plan price to ₹1499");
             }
 
             Plan enterprisePlan = planRepo.findByName("ENTERPRISE").orElseGet(() -> {
@@ -97,7 +99,7 @@ public class DataInitializer {
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created ENTERPRISE plan (₹3999) in Database");
+                log.info("✅ Created ENTERPRISE plan (₹3999) in Database");
                 return planRepo.save(p);
             });
             // Update price if it was previously seeded at old value
@@ -105,7 +107,7 @@ public class DataInitializer {
                 enterprisePlan.setPrice(BigDecimal.valueOf(3999.00));
                 enterprisePlan.setUpdatedAt(LocalDateTime.now());
                 planRepo.save(enterprisePlan);
-                System.out.println("🔄 Updated ENTERPRISE plan price to ₹3999");
+                log.info("🔄 Updated ENTERPRISE plan price to ₹3999");
             }
 
             // Deactivate old PREMIUM plan if it exists (renamed to ENTERPRISE)
@@ -114,7 +116,7 @@ public class DataInitializer {
                     oldPlan.setActive(false);
                     oldPlan.setUpdatedAt(LocalDateTime.now());
                     planRepo.save(oldPlan);
-                    System.out.println("🔄 Deactivated old PREMIUM plan (replaced by ENTERPRISE)");
+                    log.info("🔄 Deactivated old PREMIUM plan (replaced by ENTERPRISE)");
                 }
             });
 
@@ -134,7 +136,7 @@ public class DataInitializer {
                 ts.setExpireDate(LocalDateTime.now().plusDays(freePlan.getDurationInDays()));
                 tenantSubscriptionRepo.save(ts);
 
-                System.out.println("✅ Created Aegis Infra Master Tenant");
+                log.info("✅ Created Aegis Infra Master Tenant");
                 return savedT;
             });
 
@@ -147,7 +149,7 @@ public class DataInitializer {
                 admin.setRole(Role.ROLE_SUPER_ADMIN);
                 admin.setTenant(aegisInfra);
                 userRepo.save(admin);
-                System.out.println("✅ Created Aegis Infra Super Admin (admin@aegisinfra.com)");
+                log.info("✅ Created Aegis Infra Super Admin (admin@aegisinfra.com)");
             }
 
             // 4. Create Dummy Data for AI Testing under Aegis Infra
@@ -216,7 +218,7 @@ public class DataInitializer {
                         LocalDate.now().plusMonths(1), SubscriptionStatus.ACTIVE,
                         "VIP Client. Needs account review before renewal.");
 
-                System.out.println("✅ Custom AI Demo Data Seeded for Aegis Infra Tenant");
+                log.info("✅ Custom AI Demo Data Seeded for Aegis Infra Tenant");
             }
 
         };
