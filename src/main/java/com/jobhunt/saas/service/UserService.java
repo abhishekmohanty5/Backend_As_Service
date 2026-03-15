@@ -1,7 +1,7 @@
 package com.jobhunt.saas.service;
 
-import com.jobhunt.saas.dto.RegRequest;
-import com.jobhunt.saas.dto.RegResponse;
+import com.jobhunt.saas.dto.RegistrationRequest;
+import com.jobhunt.saas.dto.RegistrationResponse;
 import com.jobhunt.saas.entity.*;
 import com.jobhunt.saas.entity.TenantSubscription;
 import com.jobhunt.saas.repository.PlanRepo;
@@ -29,7 +29,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public RegResponse addUser(RegRequest requestDto) {
+    public RegistrationResponse addUser(RegistrationRequest registrationRequest) {
 
         // 1. Fetch default FREE/TRIAL plan
         Plan defaultPlan = planRepo.findByName("FREE").orElseThrow(
@@ -37,6 +37,7 @@ public class UserService {
 
         // 2. Create Tenant
         Tenant tenant = new Tenant();
+<<<<<<< HEAD
         tenant.setName(requestDto.getTenantName());
         tenant = tenantRepo.save(tenant);
 
@@ -48,24 +49,37 @@ public class UserService {
         ts.setStartDate(LocalDateTime.now());
         ts.setExpireDate(LocalDateTime.now().plusDays(defaultPlan.getDurationInDays()));
         tenantSubscriptionRepo.save(ts);
+=======
+        tenant.setName(registrationRequest.getTenantName());
+        tenant.setPlan(defaultPlan);
+        tenant.setStatus(SubscriptionStatus.ACTIVE);
+        tenantRepo.save(tenant);
+>>>>>>> 0548ce46dba79041dabbb5c9a85f5e31e2afd07b
 
-        if (userRepo.existsByEmail(requestDto.getEmail())) {
+        if (userRepo.existsByEmail(registrationRequest.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
         // 3. Create TENANT ADMIN User
         Users user = new Users();
+<<<<<<< HEAD
         user.setUsername(requestDto.getUserName());
         user.setEmail(requestDto.getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         user.setRole(Role.ROLE_TENANT_ADMIN);
+=======
+        user.setUsername(registrationRequest.getUserName());
+        user.setEmail(registrationRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+        user.setRole(Role.ROLE_ADMIN);
+>>>>>>> 0548ce46dba79041dabbb5c9a85f5e31e2afd07b
         user.setTenant(tenant);
 
         // 4. Save user
         userRepo.save(user);
 
         // 5. Return response
-        return new RegResponse(user.getUsername(), user.getEmail());
+        return new RegistrationResponse(user.getUsername(), user.getEmail());
     }
 
     public Users getUserByEmail(String email) {

@@ -54,37 +54,68 @@ public class DataInitializer {
             Plan starterPlan = planRepo.findByName("STARTER").orElseGet(() -> {
                 Plan p = new Plan();
                 p.setName("STARTER");
-                p.setPrice(BigDecimal.valueOf(999.00));
+                p.setPrice(BigDecimal.valueOf(499.00));
                 p.setDurationInDays(30);
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created STARTER plan in Database");
+                System.out.println("✅ Created STARTER plan (₹499) in Database");
                 return planRepo.save(p);
             });
+            // Update price if it was previously seeded at old value
+            if (starterPlan.getPrice().compareTo(BigDecimal.valueOf(499.00)) != 0) {
+                starterPlan.setPrice(BigDecimal.valueOf(499.00));
+                starterPlan.setUpdatedAt(LocalDateTime.now());
+                planRepo.save(starterPlan);
+                System.out.println("🔄 Updated STARTER plan price to ₹499");
+            }
 
             Plan proPlan = planRepo.findByName("PRO").orElseGet(() -> {
                 Plan p = new Plan();
                 p.setName("PRO");
-                p.setPrice(BigDecimal.valueOf(2999.00));
+                p.setPrice(BigDecimal.valueOf(1499.00));
                 p.setDurationInDays(30);
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created PRO plan in Database");
+                System.out.println("✅ Created PRO plan (₹1499) in Database");
                 return planRepo.save(p);
             });
+            // Update price if it was previously seeded at old value
+            if (proPlan.getPrice().compareTo(BigDecimal.valueOf(1499.00)) != 0) {
+                proPlan.setPrice(BigDecimal.valueOf(1499.00));
+                proPlan.setUpdatedAt(LocalDateTime.now());
+                planRepo.save(proPlan);
+                System.out.println("🔄 Updated PRO plan price to ₹1499");
+            }
 
-            Plan premiumPlan = planRepo.findByName("PREMIUM").orElseGet(() -> {
+            Plan enterprisePlan = planRepo.findByName("ENTERPRISE").orElseGet(() -> {
                 Plan p = new Plan();
-                p.setName("PREMIUM");
-                p.setPrice(BigDecimal.valueOf(9999.00));
+                p.setName("ENTERPRISE");
+                p.setPrice(BigDecimal.valueOf(3999.00));
                 p.setDurationInDays(30);
                 p.setActive(true);
                 p.setCreatedAt(LocalDateTime.now());
                 p.setUpdatedAt(LocalDateTime.now());
-                System.out.println("✅ Created PREMIUM plan in Database");
+                System.out.println("✅ Created ENTERPRISE plan (₹3999) in Database");
                 return planRepo.save(p);
+            });
+            // Update price if it was previously seeded at old value
+            if (enterprisePlan.getPrice().compareTo(BigDecimal.valueOf(3999.00)) != 0) {
+                enterprisePlan.setPrice(BigDecimal.valueOf(3999.00));
+                enterprisePlan.setUpdatedAt(LocalDateTime.now());
+                planRepo.save(enterprisePlan);
+                System.out.println("🔄 Updated ENTERPRISE plan price to ₹3999");
+            }
+
+            // Deactivate old PREMIUM plan if it exists (renamed to ENTERPRISE)
+            planRepo.findByName("PREMIUM").ifPresent(oldPlan -> {
+                if (oldPlan.isActive()) {
+                    oldPlan.setActive(false);
+                    oldPlan.setUpdatedAt(LocalDateTime.now());
+                    planRepo.save(oldPlan);
+                    System.out.println("🔄 Deactivated old PREMIUM plan (replaced by ENTERPRISE)");
+                }
             });
 
             // 2. Create Master Tenant (Aegis Infra)
@@ -143,7 +174,7 @@ public class DataInitializer {
                         return tenantPlanRepo.save(tp);
                     });
 
-            TenantPlan enterprisePlan = tenantPlanRepo.findByTenantIdAndName(aegisInfra.getId(), "Enterprise Plan")
+            TenantPlan demoEnterprisePlan = tenantPlanRepo.findByTenantIdAndName(aegisInfra.getId(), "Enterprise Plan")
                     .stream().findFirst().orElseGet(() -> {
                         TenantPlan tp = new TenantPlan();
                         tp.setTenant(aegisInfra);
@@ -181,7 +212,7 @@ public class DataInitializer {
 
             if (userSubscriptionRepo.findByUserId(userCharlie.getId()).isEmpty()) {
                 // Charlie: Enterprise yearly customer, high value
-                createDummySub(userSubscriptionRepo, userCharlie, enterprisePlan, LocalDate.now().minusMonths(11),
+                createDummySub(userSubscriptionRepo, userCharlie, demoEnterprisePlan, LocalDate.now().minusMonths(11),
                         LocalDate.now().plusMonths(1), SubscriptionStatus.ACTIVE,
                         "VIP Client. Needs account review before renewal.");
 

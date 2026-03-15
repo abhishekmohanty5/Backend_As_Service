@@ -1,6 +1,7 @@
 package com.jobhunt.saas.controller;
 
 import com.jobhunt.saas.dto.*;
+import com.jobhunt.saas.entity.SubscriptionStatus;
 import com.jobhunt.saas.entity.Tenant;
 import com.jobhunt.saas.entity.TenantPlan;
 import com.jobhunt.saas.entity.Users;
@@ -161,6 +162,64 @@ public class TenantDeveloperController {
 
                 AppResponse<List<UserSubscriptionDto>> response = AppResponse.<List<UserSubscriptionDto>>builder()
                                 .message("Successfully retrieved End User Subscriptions")
+                                .data(dtos)
+                                .status(HttpStatus.OK.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
+        // --- SUBSCRIBER STATS ---
+
+        @GetMapping("/tenant-stats")
+        public ResponseEntity<AppResponse<Map<String, Long>>> getTenantStats() {
+                Long tenantId = TenantContext.getTenantId();
+                List<UserSubscription> all = userSubscriptionRepo.findByUser_TenantId(tenantId);
+
+                long total = all.size();
+                long active = all.stream().filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE).count();
+                long cancelled = all.stream().filter(s -> s.getStatus() == SubscriptionStatus.CANCELLED).count();
+                long expired = all.stream().filter(s -> s.getStatus() == SubscriptionStatus.EXPIRED).count();
+
+                Map<String, Long> statsMap = new HashMap<>();
+                statsMap.put("total", total);
+                statsMap.put("active", active);
+                statsMap.put("cancelled", cancelled);
+                statsMap.put("pending", expired);
+
+                AppResponse<Map<String, Long>> response = AppResponse.<Map<String, Long>>builder()
+                                .message("Successfully retrieved Tenant Stats")
+                                .data(statsMap)
+                                .status(HttpStatus.OK.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
+        @GetMapping("/tenant-subscribers")
+        public ResponseEntity<AppResponse<List<UserSubscriptionDto>>> getTenantSubscribers() {
+                Long tenantId = TenantContext.getTenantId();
+                List<UserSubscription> subscriptions = userSubscriptionRepo.findByUser_TenantId(tenantId);
+                List<UserSubscriptionDto> dtos = subscriptions.stream()
+                                .map(s -> UserSubscriptionDto.builder()
+                                                .id(s.getId())
+                                                .userId(s.getUser().getId())
+                                                .tenantPlanId(s.getTenantPlan().getId())
+                                                .username(s.getUser().getUsername())
+                                                .subscriptionName(s.getSubscriptionName())
+                                                .amount(s.getAmount())
+                                                .billingCycle(s.getBillingCycle())
+                                                .startDate(s.getStartDate())
+                                                .nextBillingDate(s.getNextBillingDate())
+                                                .status(s.getStatus())
+                                                .notes(s.getNotes())
+                                                .build())
+                                .toList();
+
+                AppResponse<List<UserSubscriptionDto>> response = AppResponse.<List<UserSubscriptionDto>>builder()
+                                .message("Successfully retrieved Tenant Subscribers")
                                 .data(dtos)
                                 .status(HttpStatus.OK.value())
                                 .timestamp(LocalDateTime.now())
