@@ -11,7 +11,6 @@ import com.jobhunt.saas.repository.TenantSubscriptionRepo;
 import com.jobhunt.saas.tenant.TenantContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -25,9 +24,7 @@ public class UserService {
     private final TenantRepo tenantRepo;
     private final PlanRepo planRepo;
     private final TenantSubscriptionRepo tenantSubscriptionRepo;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public RegistrationResponse addUser(RegistrationRequest registrationRequest) {
 

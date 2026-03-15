@@ -115,6 +115,7 @@ public class UserSubscriptionService {
         subscription.setBillingCycle(dto.getBillingCycle());
         subscription.setNextBillingDate(getNextBillingDate(dto.getStartDate(), dto.getBillingCycle()));
         subscription.setStartDate(dto.getStartDate());
+        userSubscriptionRepo.save(subscription);
 
     }
 

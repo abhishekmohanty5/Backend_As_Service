@@ -51,3 +51,5 @@ application:
     jwt:
       secret-key: ${JWT_SECRET:}
       expiration: ${JWT_EXPIRATION:3600000}
+  cors:
+    default-origins: ${CORS_DEFAULT_ORIGINS:http://localhost:3000,http://localhost:8080}

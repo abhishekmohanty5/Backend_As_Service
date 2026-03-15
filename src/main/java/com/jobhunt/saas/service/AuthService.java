@@ -7,20 +7,18 @@ import com.jobhunt.saas.entity.Users;
 import com.jobhunt.saas.exception.InvalidCredentialException;
 import com.jobhunt.saas.repository.UserRepo;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private UserRepo userRepo;
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    JWTService jwtService;
+    private final UserRepo userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final JWTService jwtService;
 
     public LoginResponse login(LoginRequest loginRequest) {
 

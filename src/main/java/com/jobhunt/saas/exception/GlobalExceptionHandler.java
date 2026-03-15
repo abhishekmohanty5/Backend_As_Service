@@ -63,8 +63,8 @@ public class GlobalExceptionHandler {
         AppResponse<String> response = new AppResponse<>(
                 "Error",
                 ex.getMessage(),
-                400,
+                500,
                 LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
