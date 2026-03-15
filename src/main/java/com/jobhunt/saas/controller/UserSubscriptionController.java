@@ -136,7 +136,7 @@ public class UserSubscriptionController {
         @GetMapping("/stats")
         public ResponseEntity<AppResponse<SubscriptionStatsDto>> getSubscriptionStatsDto() {
 
-                SubscriptionStatsDto stats = userSubscriptionService.getSubscriptionStats();
+                SubscriptionStatsDto stats = userSubscriptionService.getSubscriptionStatistics();
 
                 AppResponse<SubscriptionStatsDto> response = AppResponse.<SubscriptionStatsDto>builder()
                                 .message("Success")
@@ -152,16 +152,12 @@ public class UserSubscriptionController {
         public ResponseEntity<AppResponse<List<String>>> getSubscriptionInsights() {
                 List<String> data = userSubscriptionService.getSubscriptionInsights();
 
-<<<<<<< HEAD
                 AppResponse<List<String>> response = AppResponse.<List<String>>builder()
                                 .data(data)
                                 .message("Success")
                                 .timestamp(LocalDateTime.now())
                                 .status(HttpStatus.OK.value())
                                 .build();
-=======
-       SubscriptionStatsDto stats= userSubscriptionService.getSubscriptionStatistics();
->>>>>>> 0548ce46dba79041dabbb5c9a85f5e31e2afd07b
 
                 return ResponseEntity.ok(response);
         }
