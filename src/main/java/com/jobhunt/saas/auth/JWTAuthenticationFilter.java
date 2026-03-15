@@ -64,8 +64,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             if (jwtService.isTokenValid(token, userDetails.getUsername())) {
 
                 Claims claims = jwtService.extractAllClaims(token);
-                Object tenantIdObj = claims.get("tenantId");
-                Long tenantId = tenantIdObj != null ? ((Number) tenantIdObj).longValue() : null;
+                Object rawTenantId = claims.get("tenantId");
+                Long tenantId = rawTenantId != null ? ((Number) rawTenantId).longValue() : null;
 
                 // 🔑 NEW: Store tenantId for this request
                 TenantContext.setTenantId(tenantId);

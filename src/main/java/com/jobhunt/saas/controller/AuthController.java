@@ -1,6 +1,10 @@
 package com.jobhunt.saas.controller;
 
-import com.jobhunt.saas.dto.*;
+import com.jobhunt.saas.dto.AppResponse;
+import com.jobhunt.saas.dto.LoginRequest;
+import com.jobhunt.saas.dto.LoginResponse;
+import com.jobhunt.saas.dto.RegistrationRequest;
+import com.jobhunt.saas.dto.RegistrationResponse;
 import com.jobhunt.saas.service.AuthService;
 import com.jobhunt.saas.service.UserService;
 import jakarta.validation.Valid;
@@ -24,9 +28,9 @@ public class AuthController {
     AuthService authService;
 
     @PostMapping("/reg")
-    public ResponseEntity<AppResponse<RegResponse>> regUser(@Valid @RequestBody RegRequest regRequest){
-      RegResponse response= userService.addUser(regRequest);
-      AppResponse<RegResponse> appResponse =
+    public ResponseEntity<AppResponse<RegistrationResponse>> regUser(@Valid @RequestBody RegistrationRequest registrationRequest){
+      RegistrationResponse response= userService.addUser(registrationRequest);
+      AppResponse<RegistrationResponse> appResponse =
               new AppResponse<>("Success",response,200, LocalDateTime.now());
       return ResponseEntity.ok(appResponse);
     }

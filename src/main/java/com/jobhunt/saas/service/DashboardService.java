@@ -40,22 +40,22 @@ public class DashboardService {
 
         // 3. Get their active SaaS plan subscription (if any)
         Long tenantId = TenantContext.getTenantId();
-        Optional<Subscription> activeSubOpt = subscriptionRepo
+        Optional<Subscription> activeSubscriptionOptional = subscriptionRepo
                 .findByUserIdAndTenantIdAndStatus(userId, tenantId, SubscriptionStatus.ACTIVE);
 
         LocalDateTime planExpiryDate = null;
         long daysRemaining = 0;
 
-        if (activeSubOpt.isPresent()) {
-            planExpiryDate = activeSubOpt.get().getEndDate();
+        if (activeSubscriptionOptional.isPresent()) {
+            planExpiryDate = activeSubscriptionOptional.get().getEndDate();
             daysRemaining = ChronoUnit.DAYS.between(LocalDateTime.now(), planExpiryDate);
             if (daysRemaining < 0)
                 daysRemaining = 0;
         }
 
         // 4. Count user subscriptions (reference module stats)
-        long totalSubs = userSubscriptionRepo.findByUserId(userId).size();
-        long activeSubs = userSubscriptionRepo
+        long totalUserSubscriptionCount = userSubscriptionRepo.findByUserId(userId).size();
+        long activeUserSubscriptionCount = userSubscriptionRepo
                 .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE).size();
 
         // 5. Build and return dashboard response
@@ -82,8 +82,8 @@ public class DashboardService {
                 .subscriptionServiceEnabled(true)
                 .emailNotificationsEnabled(true)
                 .schedulerEnabled(true)
-                .totalUserSubscriptions(totalSubs)
-                .activeUserSubscriptions(activeSubs)
+                .totalUserSubscriptions(totalUserSubscriptionCount)
+                .activeUserSubscriptions(activeUserSubscriptionCount)
                 .build();
     }
 

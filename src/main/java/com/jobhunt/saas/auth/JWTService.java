@@ -36,13 +36,13 @@ public class JWTService {
 
     private String  createToken(Map<String,Object> claims,String email){
         Date now = new Date(System.currentTimeMillis());
-        Date exp=new Date(now.getTime() + jwtExpiration);
+        Date expirationDate = new Date(now.getTime() + jwtExpiration);
 
          return Jwts.builder()
                  .setClaims(claims)
                  .setSubject(email)
                  .setIssuedAt(now)
-                 .setExpiration(exp)
+                 .setExpiration(expirationDate)
                  .signWith(getSecretKey(),SignatureAlgorithm.HS256)
                  .compact();
     }

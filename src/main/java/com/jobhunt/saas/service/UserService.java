@@ -1,7 +1,7 @@
 package com.jobhunt.saas.service;
 
-import com.jobhunt.saas.dto.RegRequest;
-import com.jobhunt.saas.dto.RegResponse;
+import com.jobhunt.saas.dto.RegistrationRequest;
+import com.jobhunt.saas.dto.RegistrationResponse;
 import com.jobhunt.saas.entity.*;
 import com.jobhunt.saas.repository.PlanRepo;
 import com.jobhunt.saas.repository.TenantRepo;
@@ -25,7 +25,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public RegResponse addUser(RegRequest requestDto) {
+    public RegistrationResponse addUser(RegistrationRequest registrationRequest) {
 
         // 1. Fetch default FREE/TRIAL plan
         Plan defaultPlan = planRepo.findByName("FREE").orElseThrow(
@@ -34,20 +34,20 @@ public class UserService {
 
         // 2. Create Tenant
         Tenant tenant = new Tenant();
-        tenant.setName(requestDto.getTenantName());
+        tenant.setName(registrationRequest.getTenantName());
         tenant.setPlan(defaultPlan);
         tenant.setStatus(SubscriptionStatus.ACTIVE);
         tenantRepo.save(tenant);
 
-        if (userRepo.existsByEmail(requestDto.getEmail())) {
+        if (userRepo.existsByEmail(registrationRequest.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
         // 3. Create ADMIN User
         Users user = new Users();
-        user.setUsername(requestDto.getUserName());
-        user.setEmail(requestDto.getEmail());
-        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        user.setUsername(registrationRequest.getUserName());
+        user.setEmail(registrationRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
         user.setRole(Role.ROLE_ADMIN);
         user.setTenant(tenant);
 
@@ -55,7 +55,7 @@ public class UserService {
         userRepo.save(user);
 
         // 5. Return response
-        return new RegResponse(user.getUsername(), user.getEmail());
+        return new RegistrationResponse(user.getUsername(), user.getEmail());
     }
 
     public Users getUserByEmail(String email){

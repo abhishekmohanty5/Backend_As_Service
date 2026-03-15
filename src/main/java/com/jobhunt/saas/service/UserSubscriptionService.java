@@ -39,9 +39,9 @@ public class UserSubscriptionService {
                 ()-> new RuntimeException("User not found")
         );
 
-        Long category_id=requestDto.getCategory().getId();
+        Long categoryId = requestDto.getCategory().getId();
 
-        subscriptionCategoryRepo.findById(category_id).orElseThrow(
+        subscriptionCategoryRepo.findById(categoryId).orElseThrow(
                 ()-> new RuntimeException("Invalid subscription category")
         );
 
@@ -103,7 +103,7 @@ public class UserSubscriptionService {
 
     //Update Subscription
     @Transactional
-    public void updateSubscription(Long id, UserSubscriptionDto dto){
+    public void updateSubscription(Long id, UserSubscriptionDto subscriptionRequest){
 
         Long userId = authContext.getCurrentUserId();
 
@@ -116,12 +116,12 @@ public class UserSubscriptionService {
             throw new RuntimeException("Unauthorized: This subscription does not belong to you");
         }
 
-        subscription.setSubscriptionName(dto.getSubscriptionName());
-        subscription.setNotes(dto.getNotes());
-        subscription.setAmount(dto.getAmount());
-        subscription.setBillingCycle(dto.getBillingCycle());
-        subscription.setNextBillingDate(getNextBillingDate(dto.getStartDate(),dto.getBillingCycle()));
-        subscription.setStartDate(dto.getStartDate());
+        subscription.setSubscriptionName(subscriptionRequest.getSubscriptionName());
+        subscription.setNotes(subscriptionRequest.getNotes());
+        subscription.setAmount(subscriptionRequest.getAmount());
+        subscription.setBillingCycle(subscriptionRequest.getBillingCycle());
+        subscription.setNextBillingDate(getNextBillingDate(subscriptionRequest.getStartDate(), subscriptionRequest.getBillingCycle()));
+        subscription.setStartDate(subscriptionRequest.getStartDate());
 
     }
 
@@ -173,21 +173,21 @@ public class UserSubscriptionService {
              findByUserIdAndNextBillingDateBetween(userId,startDate,endDate);
     }
 
-    public SubscriptionStatsDto getSubscriptionStats() {
+    public SubscriptionStatsDto getSubscriptionStatistics() {
         Long userId = authContext.getCurrentUserId();
 
-        List<UserSubscription> activeSubs =
+        List<UserSubscription> activeSubscriptions =
                 userSubscriptionRepo.findByUserIdAndStatus(
                         userId, SubscriptionStatus.ACTIVE);
 
-        BigDecimal monthlyTotal = activeSubs.stream()
-                .filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY)
+        BigDecimal monthlyTotal = activeSubscriptions.stream()
+                .filter(subscription -> subscription.getBillingCycle() == BillingCycle.MONTHLY)
                 .map(UserSubscription::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal yearlyAsMonthly = activeSubs.stream()
-                .filter(s -> s.getBillingCycle() == BillingCycle.YEARLY)
-                .map(s -> s.getAmount().divide(
+        BigDecimal yearlyAsMonthly = activeSubscriptions.stream()
+                .filter(subscription -> subscription.getBillingCycle() == BillingCycle.YEARLY)
+                .map(subscription -> subscription.getAmount().divide(
                         BigDecimal.valueOf(12),
                         2,
                         RoundingMode.HALF_UP
@@ -197,7 +197,7 @@ public class UserSubscriptionService {
 
         return new SubscriptionStatsDto(
                 monthlyTotal.add(yearlyAsMonthly),
-                activeSubs.size()
+                activeSubscriptions.size()
         );
     }
 
@@ -206,24 +206,24 @@ public class UserSubscriptionService {
 
         Long userId = authContext.getCurrentUserId();
 
-        List<UserSubscription> subs =
+        List<UserSubscription> activeSubscriptions =
                 userSubscriptionRepo.findByUserIdAndStatus(
                         userId, SubscriptionStatus.ACTIVE);
 
         List<String> insights = new ArrayList<>();
 
-        long entertainmentCount = subs.stream()
-                .filter(s -> s.getSubscriptionCategory().getName().equalsIgnoreCase("Entertainment"))
+        long entertainmentCount = activeSubscriptions.stream()
+                .filter(subscription -> subscription.getSubscriptionCategory().getName().equalsIgnoreCase("Entertainment"))
                 .count();
 
         if (entertainmentCount > 2) {
             insights.add("You have multiple entertainment subscriptions. Consider cancelling one.");
         }
 
-        subs.stream()
-                .filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY && s.getAmount().compareTo(BigDecimal.valueOf(500)) > 0)
-                .forEach(s -> insights.add(
-                        "Switch " + s.getSubscriptionName() + " to yearly plan to save money."
+        activeSubscriptions.stream()
+                .filter(subscription -> subscription.getBillingCycle() == BillingCycle.MONTHLY && subscription.getAmount().compareTo(BigDecimal.valueOf(500)) > 0)
+                .forEach(subscription -> insights.add(
+                        "Switch " + subscription.getSubscriptionName() + " to yearly plan to save money."
                 ));
 
         return insights;

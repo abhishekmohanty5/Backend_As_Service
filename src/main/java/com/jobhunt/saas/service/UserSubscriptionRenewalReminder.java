@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserSubscriptionRenewalRemender {
+public class UserSubscriptionRenewalReminder {
 
     private final EmailService emailService;
     private final UserSubscriptionRepo userSubscriptionRepo;
@@ -42,11 +42,11 @@ public class UserSubscriptionRenewalRemender {
 
 
      }
-    private String buildEmailBody(Users user, UserSubscription sub) {
+    private String buildEmailBody(Users user, UserSubscription subscription) {
         return "Hi " + user.getUsername() + ",\n\n" +
-                "Your subscription for " + sub.getSubscriptionName() +
-                " will renew on " + sub.getNextBillingDate() + ".\n\n" +
-                "Amount: ₹" + sub.getAmount() + "\n\n" +
+                "Your subscription for " + subscription.getSubscriptionName() +
+                " will renew on " + subscription.getNextBillingDate() + ".\n\n" +
+                "Amount: ₹" + subscription.getAmount() + "\n\n" +
                 "Thanks,\nSaaS Team";
     }
 

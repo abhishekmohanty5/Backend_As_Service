@@ -145,7 +145,7 @@ public class UserSubscriptionController {
     @GetMapping("/stats")
     public ResponseEntity<AppResponse<SubscriptionStatsDto>> getSubscriptionStatsDto(){
 
-       SubscriptionStatsDto stats= userSubscriptionService.getSubscriptionStats();
+       SubscriptionStatsDto stats= userSubscriptionService.getSubscriptionStatistics();
 
        AppResponse<SubscriptionStatsDto> response =
                AppResponse.<SubscriptionStatsDto>builder()

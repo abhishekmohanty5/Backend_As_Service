@@ -2,7 +2,7 @@ package com.jobhunt.saas.scheduler;
 
 import com.jobhunt.saas.service.ApplicationSubscriptionCleanup;
 import com.jobhunt.saas.service.UserService;
-import com.jobhunt.saas.service.UserSubscriptionRenewalRemender;
+import com.jobhunt.saas.service.UserSubscriptionRenewalReminder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class SubscriptionScheduler {
 
     private final ApplicationSubscriptionCleanup subscriptionCleanupService;
-    private final UserSubscriptionRenewalRemender renewalRemender;
+    private final UserSubscriptionRenewalReminder renewalReminder;
 
     // SaaS plan expiration
     @Scheduled(cron = "0 0 2 * * ?") // 2 AM
@@ -23,7 +23,7 @@ public class SubscriptionScheduler {
     // User subscription reminders
     @Scheduled(cron = "0 0 9 * * ?") // 9 AM
     public void sendRenewalReminders() {
-        renewalRemender.sendRenewalNotification();
+        renewalReminder.sendRenewalNotification();
     }
 
 }

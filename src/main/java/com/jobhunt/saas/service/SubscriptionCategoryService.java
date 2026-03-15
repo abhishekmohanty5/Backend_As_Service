@@ -15,11 +15,11 @@ public class SubscriptionCategoryService {
 
     private final SubscriptionCategoryRepo subscriptionCategoryRepo;
 
-    public SubscriptionCategoryDto createSubscriptionCategory(SubscriptionCategoryDto dto){
+    public SubscriptionCategoryDto createSubscriptionCategory(SubscriptionCategoryDto categoryRequest){
 
         SubscriptionCategory subscriptionCategory = SubscriptionCategory.builder()
-                .icon(dto.getIcon())
-                .name(dto.getName())
+                .icon(categoryRequest.getIcon())
+                .name(categoryRequest.getName())
                 .build();
 
        SubscriptionCategory category=subscriptionCategoryRepo.save(subscriptionCategory);
@@ -33,7 +33,7 @@ public class SubscriptionCategoryService {
     public List<SubscriptionCategoryDto> getAllSubscriptionCategories() {
 
         List<SubscriptionCategory> subscriptionCategories = subscriptionCategoryRepo.findAll();
-        List<SubscriptionCategoryDto> subscriptionCategoryDtoS = new ArrayList<>();
+        List<SubscriptionCategoryDto> subscriptionCategoryDtos = new ArrayList<>();
 
         //Convert entity to Dto
         for(SubscriptionCategory subscriptionCategory : subscriptionCategories){
@@ -41,10 +41,10 @@ public class SubscriptionCategoryService {
             SubscriptionCategoryDto subscriptionCategoryDto = new SubscriptionCategoryDto();
             subscriptionCategoryDto.setId(subscriptionCategory.getId());
             subscriptionCategoryDto.setName(subscriptionCategory.getName());
-            subscriptionCategoryDtoS.add(subscriptionCategoryDto);
+            subscriptionCategoryDtos.add(subscriptionCategoryDto);
 
         }
-        return subscriptionCategoryDtoS;
+        return subscriptionCategoryDtos;
     }
 
 
