@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/user-subscriptions")
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class UserSubscriptionController {
         // create Subscriptions
         @PostMapping
         public ResponseEntity<AppResponse<Void>> addNewSubscription(
-                        @RequestBody UserSubscriptionDto userSubscriptionDto) {
+                        @Valid @RequestBody UserSubscriptionDto userSubscriptionDto) {
 
                 userSubscriptionService.createSubscription(userSubscriptionDto);
 
@@ -85,7 +87,7 @@ public class UserSubscriptionController {
         @PutMapping("/update/{id}")
         public ResponseEntity<AppResponse<Void>> updateSubscription(
                         @PathVariable Long id,
-                        @RequestBody UserSubscriptionDto userSubscriptionDto) {
+                        @Valid @RequestBody UserSubscriptionDto userSubscriptionDto) {
 
                 userSubscriptionService.updateSubscription(id, userSubscriptionDto);
 
