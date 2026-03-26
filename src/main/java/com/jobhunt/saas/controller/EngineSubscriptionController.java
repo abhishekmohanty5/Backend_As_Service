@@ -34,7 +34,10 @@ public class EngineSubscriptionController {
     public ResponseEntity<AppResponse<TenantSubscriptionResponseDto>> upgradeEnginePlan(
             @RequestBody EnginePlanUpgradeRequest request) {
 
-        TenantSubscription upgradedSub = engineSubscriptionService.upgradePlan(request.getTargetPlanId());
+        TenantSubscription upgradedSub = engineSubscriptionService.upgradePlan(
+                request.getTargetPlanId(),
+                request.getBillingInterval(),
+                request.getTransactionId());
 
         TenantSubscriptionResponseDto dto = mapToDto(upgradedSub);
 

@@ -2,7 +2,6 @@ package com.jobhunt.saas.service;
 
 import com.jobhunt.saas.entity.Plan;
 import com.jobhunt.saas.entity.SubscriptionStatus;
-import com.jobhunt.saas.entity.SubscriptionStatus;
 import com.jobhunt.saas.entity.Tenant;
 import com.jobhunt.saas.entity.TenantSubscription;
 import com.jobhunt.saas.repository.PlanRepo;
@@ -37,10 +36,19 @@ public class EngineSubscriptionService {
 
     /**
      * Upgrades/changes the Tenant's Engine Plan.
+     *
+     * @param newPlanId        the target plan to switch to
+     * @param billingInterval  "MONTHLY" (30 days) or "ANNUAL" (365 days, 20% off)
+     * @param transactionId    opaque transaction reference from the mock payment step
      */
     @Transactional
-    public TenantSubscription upgradePlan(Long newPlanId) {
+    public TenantSubscription upgradePlan(Long newPlanId, String billingInterval, String transactionId) {
         Long tenantId = TenantContext.getTenantId();
+
+        // --- Validate transactionId was provided (proves payment step was executed) ---
+        if (transactionId == null || transactionId.isBlank()) {
+            throw new RuntimeException("Payment transaction ID is required. Complete payment first.");
+        }
 
         Tenant tenant = tenantRepo.findById(tenantId)
                 .orElseThrow(() -> new RuntimeException("Tenant not found"));
@@ -52,8 +60,13 @@ public class EngineSubscriptionService {
             throw new RuntimeException("This plan is no longer active for new subscriptions");
         }
 
-        // Reset the creation time so the duration timer starts over from today
-        TenantSubscription currentSub = tenantSubscriptionRepo.findFirstByTenantIdOrderByCreatedAtDesc(tenantId)
+        // --- Determine duration based on billing interval ---
+        boolean isAnnual = "ANNUAL".equalsIgnoreCase(billingInterval);
+        int durationDays = isAnnual ? 365 : 30;
+
+        // --- Cancel any existing active subscription ---
+        TenantSubscription currentSub = tenantSubscriptionRepo
+                .findFirstByTenantIdOrderByCreatedAtDesc(tenantId)
                 .orElse(null);
 
         if (currentSub != null) {
@@ -62,13 +75,16 @@ public class EngineSubscriptionService {
             tenantSubscriptionRepo.save(currentSub);
         }
 
+        // --- Create new subscription ---
         TenantSubscription newSub = new TenantSubscription();
         newSub.setTenant(tenant);
         newSub.setPlan(targetPlan);
         newSub.setStatus(SubscriptionStatus.ACTIVE);
         newSub.setStartDate(LocalDateTime.now());
-        newSub.setExpireDate(LocalDateTime.now().plusDays(targetPlan.getDurationInDays()));
+        newSub.setExpireDate(LocalDateTime.now().plusDays(durationDays));
+
 
         return tenantSubscriptionRepo.save(newSub);
     }
 }
+

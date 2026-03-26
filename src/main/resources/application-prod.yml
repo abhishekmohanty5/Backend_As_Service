@@ -1,0 +1,29 @@
+# ============================================================
+# application-prod.yml — Production Profile Overrides
+# Activated when: SPRING_PROFILES_ACTIVE=prod
+# (Set automatically by docker-compose.yml)
+# ============================================================
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate     # NEVER auto-modify schema in prod
+    show-sql: false          # No SQL output in production logs
+    open-in-view: false
+
+logging:
+  level:
+    root: WARN               # Only warnings and errors in prod
+    com.jobhunt.saas: INFO   # Our code at INFO level
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate: ERROR
+
+# Prod: longer JWT expiration (24 hours)
+application:
+  security:
+    jwt:
+      expiration: ${JWT_EXPIRATION:86400000}
+  cors:
+    # In prod, restrict CORS to your actual frontend domain
+    default-origins: ${CORS_DEFAULT_ORIGINS:http://localhost:3000}

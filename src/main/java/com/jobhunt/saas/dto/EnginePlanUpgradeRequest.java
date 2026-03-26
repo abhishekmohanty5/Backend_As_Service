@@ -9,4 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EnginePlanUpgradeRequest {
     private Long targetPlanId;
+    /** "MONTHLY" or "ANNUAL" */
+    private String billingInterval;
+    /** Transaction ID returned by the mock payment endpoint */
+    private String transactionId;
 }

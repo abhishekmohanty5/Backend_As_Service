@@ -35,14 +35,14 @@ public class UserSubscriptionReminder {
         for (UserSubscription userSubscription : userSubscriptions) {
             Users user = userSubscription.getUser();
 
-            // Check Tenant's Engine Plan (Must be PRO or PREMIUM)
+            // Check Tenant's Engine Plan (Must be PRO or ENTERPRISE)
             TenantSubscription tenantSub = tenantSubscriptionRepo
                     .findFirstByTenantIdOrderByCreatedAtDesc(user.getTenant().getId())
                     .orElse(null);
 
             if (tenantSub != null && tenantSub.getStatus() == SubscriptionStatus.ACTIVE) {
                 String enginePlan = tenantSub.getPlan().getName().toUpperCase();
-                if ("PRO".equals(enginePlan) || "PREMIUM".equals(enginePlan)) {
+                if ("PRO".equals(enginePlan) || "ENTERPRISE".equals(enginePlan)) {
                     String email = user.getEmail();
                     emailService.sendEmail(email,
                             "Your next renewal is coming up",

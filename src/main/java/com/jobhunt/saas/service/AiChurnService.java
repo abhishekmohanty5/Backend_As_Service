@@ -29,7 +29,7 @@ public class AiChurnService {
 
     /**
      * Runs daily at 10:00 AM to predict user churn.
-     * Only applies to end-users of Tenants on the PREMIUM plan.
+     * Only applies to end-users of Tenants on the ENTERPRISE plan.
      */
     @Scheduled(cron = "0 0 10 * * ?")
     @net.javacrumbs.shedlock.spring.annotation.SchedulerLock(name = "predictAndPreventChurn", lockAtLeastFor = "5m", lockAtMostFor = "10m")
@@ -50,7 +50,7 @@ public class AiChurnService {
         for (UserSubscription sub : atRiskSubscriptions) {
             Users user = sub.getUser();
 
-            // Check if Tenant has PREMIUM Engine Plan
+            // Check if Tenant has ENTERPRISE Engine Plan
             TenantSubscription tenantSub = tenantSubscriptionRepo
                     .findFirstByTenantIdOrderByCreatedAtDesc(user.getTenant().getId())
                     .orElse(null);
@@ -58,8 +58,8 @@ public class AiChurnService {
             if (tenantSub != null && tenantSub.getStatus() == SubscriptionStatus.ACTIVE) {
                 String enginePlan = tenantSub.getPlan().getName().toUpperCase();
 
-                // Only PREMIUM tenants get the AI churn discount feature
-                if ("PREMIUM".equals(enginePlan)) {
+                // Only ENTERPRISE tenants get the AI churn discount feature
+                if ("ENTERPRISE".equals(enginePlan)) {
                     sendDiscountEmailOnBehalfOfTenant(user, sub, discountCode);
                 }
             }

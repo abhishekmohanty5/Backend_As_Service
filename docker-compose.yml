@@ -1,0 +1,73 @@
+# ============================================================
+# Docker Compose — Aegis Infra SaaS Backend
+# ============================================================
+# Usage:
+#   Local dev (uses .env file):  docker compose up --build
+#   Background:                  docker compose up --build -d
+#   Stop:                        docker compose down
+#   Stop + delete volumes:       docker compose down -v
+# ============================================================
+
+version: '3.9'
+
+services:
+
+  # ── MySQL Database ─────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: saas-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: saasdb
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - saas-network
+
+  # ── Spring Boot Application ────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saas-app
+    restart: unless-stopped
+    # IMPORTANT: When running inside Docker, DB_URL must point to the
+    # service name 'db' not 'localhost'. Override it here so the .env
+    # file (which uses localhost) still works for local dev without Docker.
+    environment:
+      DB_URL: jdbc:mysql://db:3306/saasdb?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - saas-network
+
+# ── Volumes ────────────────────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+
+# ── Networks ───────────────────────────────────────────────
+networks:
+  saas-network:
+    driver: bridge

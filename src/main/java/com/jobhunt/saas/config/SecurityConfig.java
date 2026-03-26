@@ -73,21 +73,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        String allowedOrigins = System.getenv("ALLOWED_ORIGINS");
-        if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
-            if (allowedOrigins.equals("*")) {
-                configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-            } else {
-                configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-            }
-        } else {
-            // Default to configured localhost origins when no ALLOWED_ORIGINS env var is set
-            configuration.setAllowedOrigins(Arrays.asList(corsDefaultOrigins.split(",")));
-        }
+        // For tunnel testing, allow all origins
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With",
-                "X-API-CLIENT-ID", "X-API-CLIENT-SECRET"));
+                "X-API-CLIENT-ID", "X-API-CLIENT-SECRET", "Bypass-Tunnel-Reminder"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 

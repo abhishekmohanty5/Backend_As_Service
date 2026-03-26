@@ -1,0 +1,30 @@
+# ============================================================
+# application-dev.yml — Development Profile Overrides
+# Activated when: SPRING_PROFILES_ACTIVE=dev (default locally)
+# ============================================================
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update       # Auto-creates/updates schema in dev
+    show-sql: true           # Print SQL queries to console
+    properties:
+      hibernate:
+        format_sql: true     # Pretty-print SQL
+
+  # H2 console disabled in dev (we use real MySQL locally)
+
+logging:
+  level:
+    root: INFO
+    com.jobhunt.saas: DEBUG  # Verbose logs for our code in dev
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+
+# Dev-only: shorter JWT expiration for easier testing (1 hour)
+application:
+  security:
+    jwt:
+      expiration: ${JWT_EXPIRATION:3600000}

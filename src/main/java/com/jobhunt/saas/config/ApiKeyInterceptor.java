@@ -59,9 +59,9 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
         String planName = tenant.getPlan().getName().toUpperCase();
 
         // Example Route Blocking Rule:
-        // If route requires advanced features, only premium plan allowed
-        if (uri.contains("/ai-agent") && !"PREMIUM".equals(planName)) {
-            response.sendError(HttpStatus.PAYMENT_REQUIRED.value(), "Upgrade to Premium to access AI Features.");
+        // If route requires advanced features, only Enterprise plan allowed
+        if (uri.contains("/ai-agent") && !"ENTERPRISE".equals(planName)) {
+            response.sendError(HttpStatus.PAYMENT_REQUIRED.value(), "Upgrade to Enterprise to access AI Features.");
             return false;
         }
 
