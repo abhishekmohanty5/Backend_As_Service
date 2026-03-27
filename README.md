@@ -1,8 +1,8 @@
 <div align="center">
 
-#  Aegis Infra — Multi-Tenant SaaS Subscription Platform
+# Aegis Infra — Multi-Tenant Backend-as-a-Service Platform
 
-**A production-ready, containerized, multi-tenant SaaS subscription management platform built with Spring Boot 3, Docker, and GitHub Actions CI/CD. Features AI-powered churn analysis, API-key metering, email automation, and a full developer SDK.**
+**A production-ready Backend-as-a-Service (BaaS) platform built with Spring Boot 3, Docker, and GitHub Actions CI/CD. Provides Authentication, Subscription Management, and API metering as services to SaaS tenants — letting them onboard users, define billing plans, and expose APIs without building infrastructure from scratch.**
 
 [![CI — Build & Test](https://github.com/abhishekmohanty5/Saas_Subscription-/actions/workflows/ci.yml/badge.svg)](https://github.com/abhishekmohanty5/Saas_Subscription-/actions/workflows/ci.yml)
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
@@ -16,27 +16,29 @@
 
 ---
 
-##  Project Overview
+## Project Overview
 
-**Aegis Infra** is a backend-as-a-service (BaaS) platform that allows **Tenants (SaaS companies)** to onboard, manage subscription plans, and offer their own subscription products to **End Users** — all through a clean, secured REST API surface.
+**Aegis Infra** is a **Backend-as-a-Service (BaaS) infrastructure platform**. SaaS companies (Tenants) integrate it to instantly get Authentication, Subscription Billing, and API management for their own end users — without building any of that infrastructure themselves.
 
-### What it does
+Think of it as a self-hosted alternative to combining **Auth0 + Chargebee + API Gateway** in a single Spring Boot backend.
 
-| Feature | Description |
+### What Tenants Get Out of the Box
+
+| Service | Description |
 |---|---|
-|  **Multi-Tenancy** | Each tenant gets isolated data, billing plans, and API credentials |
-| 🔐 **JWT Auth** | Stateless Spring Security filter chain with BCrypt password hashing |
-| 💳 **Subscription Lifecycle** | Subscribe, cancel, auto-expire with ShedLock-protected scheduling |
-| 🤖 **AI Churn Analysis** | Google Gemini API predicts churn risk per user subscription |
-| 📧 **Email Automation** | Renewal reminders and expiry alerts via Spring Mail (SMTP/Gmail) |
-| 🔑 **API Key Metering** | Tenants get `clientId` + `clientSecret`; API usage is tracked per-call |
-| 📊 **Analytics Dashboard** | Real-time subscription stats, plan health, and insights |
-| 🐳 **Containerized** | Fully Dockerized with multi-stage builds and Docker Compose orchestration |
-| ⚙️ **CI/CD** | GitHub Actions pipeline — build, test (H2 in-memory), package, and upload JAR |
+| Auth-as-a-Service | Register and authenticate end users via JWT; no auth infrastructure needed on the tenant side |
+| Subscription-as-a-Service | Define custom billing plans, handle subscribe / cancel / auto-expire lifecycle |
+| API Key Management | Each tenant gets a `clientId` + `clientSecret` to call the platform on behalf of their users |
+| API Usage Metering | Every API call is tracked per tenant; usage stats exposed on the dashboard |
+| AI Churn Analysis | Google Gemini predicts churn risk per user subscription with actionable recommendations |
+| Email Automation | Renewal reminders and expiry alerts sent automatically via SMTP |
+| Analytics Dashboard | Real-time stats — active subscriptions, cancellations, plan health, API call counts |
+| Multi-Tenancy | Full data isolation per tenant; each tenant only sees their own users and plans |
+| CI/CD + Docker | Production-ready containerized deployment with GitHub Actions pipeline |
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -56,7 +58,7 @@
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 ```
                         ┌──────────────────────────────────────────────────────────────┐
@@ -112,7 +114,7 @@ JwtAuthFilter (extracts & validates Bearer token)
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 saas-Backend/
@@ -199,7 +201,7 @@ saas-Backend/
 
 ---
 
-## 🔐 Authentication & Authorization
+## Authentication & Authorization
 
 ### Auth Flow
 
@@ -221,9 +223,9 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
-### 🔑 Auth Endpoints (`/api/auth`)
+###  Auth Endpoints (`/api/auth`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -232,7 +234,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 🌐 Public Endpoints (`/api/public`)
+### Public Endpoints (`/api/public`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -240,7 +242,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 👤 User Subscription Endpoints (`/api/user-subscriptions`)
+###  User Subscription Endpoints (`/api/user-subscriptions`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -256,7 +258,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 🏢 Admin / Plan Management (`/api/admin`)
+###  Admin / Plan Management (`/api/admin`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -266,7 +268,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 🧑‍💻 Developer / Tenant Endpoints (`/api/developer`)
+###  Developer / Tenant Endpoints (`/api/developer`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -282,7 +284,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 🏷️ Tenant Public API (`/api/tenant` — API Key Auth)
+### Tenant Public API (`/api/tenant` — API Key Auth)
 
 > These endpoints are callable by end users using the tenant's `clientId` and `clientSecret`
 
@@ -295,7 +297,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 💳 Mock Payment (`/api/payment`)
+###  Mock Payment (`/api/payment`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -304,7 +306,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 📊 Dashboard (`/api/dashboard`)
+### Dashboard (`/api/dashboard`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -312,7 +314,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-### 🔓 Super Admin (`/api/super-admin`)
+### Super Admin (`/api/super-admin`)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
@@ -320,7 +322,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ```
 ┌─────────────┐        ┌───────────────────┐        ┌────────────────────┐
@@ -376,7 +378,7 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## 🤖 AI Integration — Google Gemini
+## AI Integration — Google Gemini
 
 **`AiChurnService`** calls the Gemini REST API to predict user churn risk based on subscription patterns:
 
@@ -391,7 +393,7 @@ Output → { riskLevel: "HIGH|MEDIUM|LOW", reason: "...", recommendation: "..." 
 
 ---
 
-## ⏰ Scheduled Jobs (ShedLock Protected)
+## Scheduled Jobs (ShedLock Protected)
 
 All scheduled jobs use **ShedLock** to prevent duplicate execution in a multi-instance deployment.
 
@@ -405,7 +407,7 @@ All scheduled jobs use **ShedLock** to prevent duplicate execution in a multi-in
 
 ---
 
-## 🔑 API Key Metering
+## API Key Metering
 
 Every tenant gets a unique `clientId` + `clientSecret` (generated on registration).
 
@@ -417,7 +419,7 @@ API Call → ApiKeyInterceptor validates credentials
 
 ---
 
-## 🐳 Docker Usage
+## Docker Usage
 
 ### Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
@@ -468,7 +470,7 @@ App is available at: `http://localhost:8080`
 
 ---
 
-## ⚙️ Environment Configuration
+## Environment Configuration
 
 The project uses **Spring Profile-based configuration** for environment separation:
 
@@ -506,7 +508,7 @@ SPRING_PROFILES_ACTIVE=dev
 
 ---
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 GitHub Actions triggers automatically on every push or PR to `main` / `development`:
 
@@ -526,13 +528,13 @@ Push to GitHub
 └──────────────────────────────────────┘
 ```
 
-- ✅ No secrets required in CI — tests use H2 in-memory database
-- ✅ Maven dependency cache reduces build time
-- ✅ Built JAR uploaded as a GitHub Actions artifact (downloadable)
+-  No secrets required in CI — tests use H2 in-memory database
+- Maven dependency cache reduces build time
+- Built JAR uploaded as a GitHub Actions artifact (downloadable)
 
 ---
 
-## 🧪 Running Tests
+##  Running Tests
 
 ```bash
 # Run all tests (uses H2, no MySQL needed)
@@ -547,7 +549,7 @@ mvn test -Dtest=AuthServiceTest
 
 ---
 
-## ☁️ AWS EC2 Deployment
+## AWS EC2 Deployment
 
 ```bash
 # 1. Launch EC2 Ubuntu 22.04, t2.micro (Open port 8080 + 22 in Security Group)
@@ -573,7 +575,7 @@ bash setup.sh -d
 
 ---
 
-## 👤 Author
+## Author
 
 **Abhishek Mohanty**
 - GitHub: [@abhishekmohanty5](https://github.com/abhishekmohanty5)
