@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Aegis Infra — Multi-Tenant SaaS Subscription Platform
+#  Aegis Infra — Multi-Tenant SaaS Subscription Platform
 
 **A production-ready, containerized, multi-tenant SaaS subscription management platform built with Spring Boot 3, Docker, and GitHub Actions CI/CD. Features AI-powered churn analysis, API-key metering, email automation, and a full developer SDK.**
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 📋 Project Overview
+##  Project Overview
 
 **Aegis Infra** is a backend-as-a-service (BaaS) platform that allows **Tenants (SaaS companies)** to onboard, manage subscription plans, and offer their own subscription products to **End Users** — all through a clean, secured REST API surface.
 
@@ -24,7 +24,7 @@
 
 | Feature | Description |
 |---|---|
-| 🏢 **Multi-Tenancy** | Each tenant gets isolated data, billing plans, and API credentials |
+|  **Multi-Tenancy** | Each tenant gets isolated data, billing plans, and API credentials |
 | 🔐 **JWT Auth** | Stateless Spring Security filter chain with BCrypt password hashing |
 | 💳 **Subscription Lifecycle** | Subscribe, cancel, auto-expire with ShedLock-protected scheduling |
 | 🤖 **AI Churn Analysis** | Google Gemini API predicts churn risk per user subscription |
