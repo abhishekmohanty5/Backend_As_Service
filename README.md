@@ -433,8 +433,8 @@ git clone https://github.com/abhishekmohanty5/Saas_Subscription-.git
 cd Saas_Subscription-
 
 # Copy and fill in your environment variables
-cp .env.example .env
-# Edit .env with your credentials
+cp .env.dev.example .env.dev
+# Edit .env.dev with your credentials
 
 # Linux/Mac — Start everything
 bash setup.sh -d
@@ -565,7 +565,7 @@ sudo usermod -aG docker ubuntu
 # 4. Clone & configure
 git clone https://github.com/abhishekmohanty5/Saas_Subscription-.git
 cd Saas_Subscription-
-nano .env   # Fill in production values
+nano .env.dev   # Fill in production values
 
 # 5. Launch
 bash setup.sh -d

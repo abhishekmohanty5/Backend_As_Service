@@ -2,7 +2,7 @@ target/
 .git/
 .idea/
 *.iml
-.env
+.env.dev
 .env.*
 run.ps1
 startup_log.txt

@@ -2,7 +2,7 @@
 # Docker Compose — Aegis Infra SaaS Backend
 # ============================================================
 # Usage:
-#   Local dev (uses .env file):  docker compose up --build
+#   Local dev (uses .env.dev file):  docker compose up --build
 #   Background:                  docker compose up --build -d
 #   Stop:                        docker compose down
 #   Stop + delete volumes:       docker compose down -v
@@ -41,7 +41,7 @@ services:
     container_name: saas-app
     restart: unless-stopped
     # IMPORTANT: When running inside Docker, DB_URL must point to the
-    # service name 'db' not 'localhost'. Override it here so the .env
+    # service name 'db' not 'localhost'. Override it here so the .env.dev
     # file (which uses localhost) still works for local dev without Docker.
     environment:
       DB_URL: jdbc:mysql://db:3306/saasdb?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true

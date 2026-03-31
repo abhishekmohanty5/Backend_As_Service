@@ -1,5 +1,6 @@
 package com.jobhunt.saas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,9 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "tenants")
@@ -26,12 +27,6 @@ public class Tenant {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<TenantSubscription> subscriptions = new ArrayList<>();
-
-    private LocalDateTime createdAt;
-
     @Column(nullable = false, unique = true, updatable = false)
     private String clientId;
 
@@ -41,37 +36,46 @@ public class Tenant {
     @Column(nullable = false)
     private Long apiCallCount = 0L;
 
+    @Column(nullable = false)
+    private boolean setEnable;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<TenantSubscription> subscriptions = new ArrayList<>();
+
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.setEnable = false;
         if (this.clientId == null) {
             this.clientId = "sb_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         }
         if (this.clientSecret == null) {
             this.clientSecret = "sk_" + UUID.randomUUID().toString().replace("-", "");
         }
-        if (this.apiCallCount == null) {
-            this.apiCallCount = 0L;
-        }
     }
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public TenantSubscription getActiveSubscription() {
-        if (subscriptions == null || subscriptions.isEmpty())
+        if (subscriptions == null || subscriptions.isEmpty()) {
             return null;
+        }
         return subscriptions.stream()
                 .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
                 .findFirst()
                 .orElse(subscriptions.get(subscriptions.size() - 1));
     }
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public Plan getPlan() {
         TenantSubscription sub = getActiveSubscription();
         return sub != null ? sub.getPlan() : null;
     }
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public SubscriptionStatus getStatus() {
         TenantSubscription sub = getActiveSubscription();
         return sub != null ? sub.getStatus() : null;

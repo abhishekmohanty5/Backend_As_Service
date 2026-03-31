@@ -7,14 +7,12 @@ import com.jobhunt.saas.dto.RegistrationRequest;
 import com.jobhunt.saas.dto.RegistrationResponse;
 import com.jobhunt.saas.service.AuthService;
 import com.jobhunt.saas.service.UserService;
+import jakarta.persistence.GeneratedValue;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -40,5 +38,18 @@ public class AuthControllerInfra {
         AppResponse<LoginResponse> body=
                 new AppResponse<>("Success",response,200, LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.OK).body(body);
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<AppResponse<String>> verifyEmail(@RequestParam String token){
+
+        authService.verifyEmail(token);
+        AppResponse<String> body=
+                new AppResponse<>("Email Verified Successfully",
+                        null,
+                        200,
+                        LocalDateTime.now()
+                );
+         return ResponseEntity.ok(body);
     }
 }

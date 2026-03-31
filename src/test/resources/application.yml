@@ -5,7 +5,7 @@
 
 spring:
   config:
-    import: ""   # Disable .env import in test — not available in CI
+    import: ""   # Disable .env.dev import in test — not available in CI
 
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL

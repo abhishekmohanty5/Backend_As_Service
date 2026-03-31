@@ -25,6 +25,18 @@ public class Users {
     @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
+    private boolean setEnable;
+
+    @Column(nullable = false)
+    private boolean emailVerified;
+
+    @PrePersist
+    public void onCreation(){
+        this.setEnable=false;
+        this.emailVerified=false;
+    }
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
