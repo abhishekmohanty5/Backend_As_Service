@@ -1,10 +1,6 @@
 package com.jobhunt.saas.serviceTest;
 
 import com.jobhunt.saas.auth.AuthContext;
-import com.jobhunt.saas.dto.SubscriptionResponse;
-import com.jobhunt.saas.entity.Plan;
-import com.jobhunt.saas.entity.UserSubscription;
-import com.jobhunt.saas.entity.SubscriptionStatus;
 import com.jobhunt.saas.repository.PlanRepo;
 import com.jobhunt.saas.repository.UserSubscriptionRepo;
 import com.jobhunt.saas.service.UserSubscriptionService;

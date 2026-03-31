@@ -73,8 +73,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // For tunnel testing, allow all origins
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        // Parse allowed origins from configuration property
+        java.util.List<String> allowedOrigins = java.util.Arrays.stream(corsDefaultOrigins.split(","))
+                .map(String::trim)
+                .toList();
+        configuration.setAllowedOrigins(allowedOrigins);
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With",

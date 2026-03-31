@@ -6,6 +6,7 @@ import com.jobhunt.saas.repository.TenantRepo;
 import com.jobhunt.saas.tenant.TenantContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -84,8 +85,8 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-            Exception ex) {
+    public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler,
+                                Exception ex) {
         // Clear the tenant context after the request completes to prevent memory leaks
         // in the thread pool
         if (request.getRequestURI().startsWith("/api/v1/")) {

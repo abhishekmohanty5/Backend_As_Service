@@ -36,6 +36,7 @@ public class UserService {
         Tenant tenant = new Tenant();
         tenant.setName(registrationRequest.getTenantName());
         tenant = tenantRepo.save(tenant);
+        tenant.
 
         // 2.5 Create Engine Subscription
         TenantSubscription ts = new TenantSubscription();

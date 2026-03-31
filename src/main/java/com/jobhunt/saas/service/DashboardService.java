@@ -8,13 +8,11 @@ import com.jobhunt.saas.entity.Users;
 import com.jobhunt.saas.repository.TenantRepo;
 import com.jobhunt.saas.repository.UserRepo;
 import com.jobhunt.saas.repository.UserSubscriptionRepo;
-import com.jobhunt.saas.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

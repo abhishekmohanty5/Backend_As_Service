@@ -1,7 +1,7 @@
 package com.jobhunt.saas.scheduler;
 
 import com.jobhunt.saas.service.ApplicationSubscriptionCleanup;
-import com.jobhunt.saas.service.UserService;
+
 import com.jobhunt.saas.service.UserSubscriptionReminder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

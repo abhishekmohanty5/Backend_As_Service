@@ -44,6 +44,7 @@ public class TenantPlan {
     private String features; // E.g., JSON string or comma-separated list of features
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean active = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)

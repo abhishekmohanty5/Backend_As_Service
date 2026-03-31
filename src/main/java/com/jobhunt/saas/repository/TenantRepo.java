@@ -1,6 +1,5 @@
 package com.jobhunt.saas.repository;
 
-import com.jobhunt.saas.entity.SubscriptionStatus;
 import com.jobhunt.saas.entity.Tenant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
