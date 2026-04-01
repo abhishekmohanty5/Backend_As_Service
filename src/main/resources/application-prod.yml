@@ -82,3 +82,7 @@ application:
   cors:
 
     default-origins: ${CORS_DEFAULT_ORIGINS:https://saas-frontend2-0.vercel.app/}
+
+# Production app configuration
+app:
+  base-url: ${APP_BASE_URL:https://backendasservice-production.up.railway.app}
