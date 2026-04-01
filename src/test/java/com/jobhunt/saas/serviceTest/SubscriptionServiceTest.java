@@ -1,10 +1,10 @@
 package com.jobhunt.saas.serviceTest;
 
-import com.jobhunt.saas.auth.AuthContext;
-import com.jobhunt.saas.repository.PlanRepo;
-import com.jobhunt.saas.repository.UserSubscriptionRepo;
-import com.jobhunt.saas.service.UserSubscriptionService;
-import com.jobhunt.saas.tenant.TenantContext;
+import com.jobhunt.saas.auth.application.service.AuthContext;
+import com.jobhunt.saas.plan.adapter.out.persistence.PlanRepo;
+import com.jobhunt.saas.subscription.adapter.out.persistence.UserSubscriptionRepo;
+import com.jobhunt.saas.subscription.application.service.UserSubscriptionService;
+import com.jobhunt.saas.shared.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

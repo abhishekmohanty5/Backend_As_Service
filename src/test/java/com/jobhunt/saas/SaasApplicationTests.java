@@ -1,7 +1,7 @@
 package com.jobhunt.saas;
 
-import com.jobhunt.saas.config.ApiKeyInterceptor;
-import com.jobhunt.saas.config.ApiUsageInterceptor;
+import com.jobhunt.saas.tenant.adapter.in.web.ApiKeyInterceptor;
+import com.jobhunt.saas.tenant.adapter.in.web.ApiUsageInterceptor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
