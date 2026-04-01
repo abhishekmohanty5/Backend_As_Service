@@ -62,18 +62,21 @@ jobs:
 
       - name: Step 1 — Copy files to EC2
         run: |
+          # Create the directory first via SSH to ensure it exists
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app"
+          
           # Send the JAR, the Dockerfile, and the Compose file
           scp -i private_key.pem -o StrictHostKeyChecking=no \
             ${{ env.APP_JAR_NAME }} \
             Dockerfile.prod \
             docker-compose.prod.yml \
             .env.prod \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/saas-backend/
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/
 
       - name: Step 2 — Run Docker Compose on EC2
         run: |
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFSCRIPT'
-          cd /opt/saas-backend/
+          cd ~/app/
           # Ensure old container is stopped
           docker-compose -f docker-compose.prod.yml down --remove-orphans || true
           # Rebuild and start (using host network)
