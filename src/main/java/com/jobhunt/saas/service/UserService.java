@@ -88,7 +88,7 @@ public class UserService {
         verificationToken.setExpiryTime(expiryTime);
         emailTokenRepo.save(verificationToken);
 
-        // 6. Send verification email
+        // 6. Send verification email (non-blocking - don't fail registration if email fails)
         try {
             String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
             emailService.sendEmail(
@@ -98,8 +98,8 @@ public class UserService {
             );
             log.info("Verification email sent to: {}", registrationRequest.getEmail());
         } catch (Exception e) {
-            log.error("Failed to send verification email to: {}", registrationRequest.getEmail(), e);
-            throw new RuntimeException("Failed to send verification email");
+            // Log error but don't fail registration
+            log.warn("Failed to send verification email to: {}, but user was created successfully", registrationRequest.getEmail(), e);
         }
 
         // 7. Return response
@@ -134,9 +134,10 @@ public class UserService {
                     "Verify your email",
                     "Please click the following link to verify your email: " + verifyLink
             );
+            log.info("Verification email resent to: {}", email);
         } catch (Exception e) {
-            log.error("Failed to resend verification email to: {}", email, e);
-            throw new RuntimeException("Failed to send verification email");
+            // Log error but don't fail - user can try again
+            log.warn("Failed to resend verification email to: {}", email, e);
         }
     }
 
