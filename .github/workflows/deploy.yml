@@ -65,12 +65,10 @@ jobs:
           # Create the directory first via SSH to ensure it exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app"
           
-          # Send the JAR, the Dockerfile, and the Compose file
           scp -i private_key.pem -o StrictHostKeyChecking=no \
             ${{ env.APP_JAR_NAME }} \
             Dockerfile.prod \
             docker-compose.prod.yml \
-            .env.prod \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/
 
       - name: Step 2 — Run Docker Compose on EC2
