@@ -40,14 +40,15 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:noemail@placeholder.com}
+    password: ${MAIL_PASSWORD:placeholder_password}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
       mail.smtp.starttls.required: true
       mail.smtp.connectiontimeout: 5000
       mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
       mail.smtp.writetimeout: 5000
 
 logging:
