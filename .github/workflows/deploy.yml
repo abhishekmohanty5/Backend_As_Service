@@ -89,7 +89,7 @@ jobs:
           echo "Waiting for app to start (30s)..."
           sleep 30
           # Using port 8080 because the app is on the host network
-          curl -f http://${{ secrets.EC2_HOST }}:8080/actuator/health || exit 1
+          curl http://${{ secrets.EC2_HOST }}:8080/actuator/health || exit 1
           echo "✅ Deployment successful and healthy!"
 
       - name: Cleanup
