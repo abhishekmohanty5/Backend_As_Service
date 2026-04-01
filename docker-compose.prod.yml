@@ -13,9 +13,6 @@ services:
       - .env.prod
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - JWT_SECRET=${JWT_SECRET}
-      - APP_BASE_URL=${APP_BASE_URL}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
       - saas-logs:/app/logs
     restart: unless-stopped
