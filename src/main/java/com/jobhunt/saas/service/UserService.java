@@ -88,15 +88,20 @@ public class UserService {
         verificationToken.setExpiryTime(expiryTime);
         emailTokenRepo.save(verificationToken);
 
-        // 6. Send verification email (non-blocking - don't fail registration if email fails)
+        // 6. Send verification email (optional - skip if not configured)
         try {
-            String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
-            emailService.sendEmail(
-                    registrationRequest.getEmail(),
-                    "Verify your email",
-                    "Please click the following link to verify your email: " + verifyLink
-            );
-            log.info("Verification email sent to: {}", registrationRequest.getEmail());
+            // Skip email if credentials are placeholder/missing
+            if (!isEmailConfigured()) {
+                log.info("Email service not configured - skipping verification email");
+            } else {
+                String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
+                emailService.sendEmail(
+                        registrationRequest.getEmail(),
+                        "Verify your email",
+                        "Please click the following link to verify your email: " + verifyLink
+                );
+                log.info("Verification email sent to: {}", registrationRequest.getEmail());
+            }
         } catch (Exception e) {
             // Log error but don't fail registration
             log.warn("Failed to send verification email to: {}, but user was created successfully", registrationRequest.getEmail(), e);
@@ -128,6 +133,10 @@ public class UserService {
         emailTokenRepo.save(verificationToken);
 
         try {
+            if (!isEmailConfigured()) {
+                log.info("Email service not configured - skipping resend verification email");
+                return;
+            }
             String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
             emailService.sendEmail(
                     email,
@@ -149,5 +158,13 @@ public class UserService {
         }
 
         return userRepo.findByEmailAndTenant_Id(email, tenantId);
+    }
+
+    private boolean isEmailConfigured() {
+        // Check if email credentials are configured (not placeholders)
+        String username = System.getenv("MAIL_USERNAME");
+        String password = System.getenv("MAIL_PASSWORD");
+        return username != null && !username.isEmpty() && !username.contains("placeholder")
+                && password != null && !password.isEmpty() && !password.contains("placeholder");
     }
 }
