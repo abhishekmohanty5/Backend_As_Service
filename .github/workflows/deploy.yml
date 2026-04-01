@@ -60,38 +60,78 @@ jobs:
           echo "${{ secrets.EC2_PRIVATE_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
-      - name: Step 1 — Copy files to EC2
+      - name: Step 1 — Write .env.prod and copy files to EC2
         run: |
-          # Create the directory first via SSH to ensure it exists
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app"
-          
+          # Build the .env.prod file from GitHub Secrets so it never needs to
+          # be stored inside the repository.
+          # Use a temp file with restricted permissions so secret values are
+          # not world-readable on the runner filesystem.
+          ENV_FILE=$(mktemp)
+          chmod 600 "$ENV_FILE"
+          cat > "$ENV_FILE" <<EOF
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          DATABASE_USER_NAME=${{ secrets.DATABASE_USER_NAME }}
+          DATABASE_USER_PASSWORD=${{ secrets.DATABASE_USER_PASSWORD }}
+          MAIL_HOST=${{ secrets.MAIL_HOST }}
+          MAIL_PORT=${{ secrets.MAIL_PORT }}
+          MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}
+          CORS_DEFAULT_ORIGINS=${{ secrets.CORS_DEFAULT_ORIGINS }}
+          EOF
+          # Export the path so the cleanup step can remove it even on failure
+          echo "ENV_FILE=$ENV_FILE" >> "$GITHUB_ENV"
+
+          # Create the deploy directory on EC2
+          ssh -i private_key.pem -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app"
+
+          # Copy all required deployment artefacts
           scp -i private_key.pem -o StrictHostKeyChecking=no \
             ${{ env.APP_JAR_NAME }} \
             Dockerfile.prod \
             docker-compose.prod.yml \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/
+            "$ENV_FILE" \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/.env.prod
 
       - name: Step 2 — Run Docker Compose on EC2
+        # Use 'docker compose' (v2 plugin) — the legacy 'docker-compose' binary
+        # is not installed on modern Amazon Linux 2023 / Ubuntu 22.04 instances.
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFSCRIPT'
+          ssh -i private_key.pem -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFSCRIPT'
           cd ~/app/
-          # Ensure old container is stopped
-          docker-compose -f docker-compose.prod.yml down --remove-orphans || true
-          # Rebuild and start (using host network)
-          docker-compose -f docker-compose.prod.yml build
-          docker-compose -f docker-compose.prod.yml up -d
-          # Cleanup unused images to save disk space on EC2
+          # Stop any running instance gracefully
+          docker compose -f docker-compose.prod.yml down --remove-orphans || true
+          # Rebuild from the new JAR and start in the background
+          docker compose -f docker-compose.prod.yml build --no-cache
+          docker compose -f docker-compose.prod.yml up -d
+          # Reclaim disk space — critical on free-tier instances
           docker image prune -f
           EOFSCRIPT
 
       - name: Step 3 — Verify Deployment Health
+        # Retry for up to 90 s (t2.micro is slow to warm up Spring Boot).
+        # Health check uses HTTP because SSL is not yet configured; the
+        # /actuator/health endpoint does not expose sensitive data.
         run: |
-          echo "Waiting for app to start (30s)..."
-          sleep 30
-          # Using port 8080 because the app is on the host network
-          curl http://${{ secrets.EC2_HOST }}:8080/actuator/health || exit 1
-          echo "✅ Deployment successful and healthy!"
+          MAX_ATTEMPTS=9
+          RETRY_INTERVAL=10
+          echo "Waiting for Spring Boot to become healthy…"
+          for i in $(seq 1 "$MAX_ATTEMPTS"); do
+            if curl -sf http://${{ secrets.EC2_HOST }}:8080/actuator/health; then
+              echo ""
+              echo "✅ Deployment successful and healthy!"
+              exit 0
+            fi
+            echo "Attempt $i/$MAX_ATTEMPTS — not ready yet, retrying in ${RETRY_INTERVAL}s…"
+            sleep "$RETRY_INTERVAL"
+          done
+          echo "❌ Health check timed out after $((MAX_ATTEMPTS * RETRY_INTERVAL)) s"
+          exit 1
 
       - name: Cleanup
         if: always()
-        run: rm -f private_key.pem
+        # 'if: always()' runs on success, failure, AND cancellation.
+        run: rm -f private_key.pem "${ENV_FILE:-}"
