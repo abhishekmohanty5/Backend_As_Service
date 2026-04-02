@@ -1,0 +1,157 @@
+package com.aegis.saas.service;
+
+import com.aegis.saas.dto.RegistrationRequest;
+import com.aegis.saas.dto.RegistrationResponse;
+import com.aegis.saas.entity.*;
+import com.aegis.saas.exception.BusinessException;
+import com.aegis.saas.exception.ResourceNotFoundException;
+import com.aegis.saas.repository.EmailVerificationTokenRepo;
+import com.aegis.saas.repository.PlanRepo;
+import com.aegis.saas.repository.TenantRepo;
+import com.aegis.saas.repository.TenantSubscriptionRepo;
+import com.aegis.saas.repository.UserRepo;
+import com.aegis.saas.tenant.TenantContext;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+@Slf4j
+public class UserService {
+
+    private final UserRepo userRepo;
+    private final TenantRepo tenantRepo;
+    private final PlanRepo planRepo;
+    private final TenantSubscriptionRepo tenantSubscriptionRepo;
+    private final EmailVerificationTokenRepo emailTokenRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
+
+    @Value("${email.token.expiration-hours:24}")
+    private int tokenExpirationHours;
+
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
+    public RegistrationResponse addUser(RegistrationRequest registrationRequest) {
+
+        // 1. Email uniqueness check FIRST — before any DB writes
+        if (userRepo.existsByEmail(registrationRequest.getEmail())) {
+            throw new BusinessException("Email is already registered. Please login or use a different email.");
+        }
+
+        // 2. Fetch default FREE plan
+        Plan defaultPlan = planRepo.findByName("FREE").orElseThrow(
+                () -> new ResourceNotFoundException("Default FREE plan not found. Please contact support."));
+
+        // 3. Create Tenant
+        Tenant tenant = new Tenant();
+        tenant.setName(registrationRequest.getTenantName());
+        tenant = tenantRepo.save(tenant);
+
+        // 4. Create Engine Subscription
+        TenantSubscription ts = new TenantSubscription();
+        ts.setTenant(tenant);
+        ts.setPlan(defaultPlan);
+        ts.setStartDate(LocalDateTime.now());
+        ts.setExpireDate(LocalDateTime.now().plusDays(defaultPlan.getDurationInDays()));
+        tenantSubscriptionRepo.save(ts);
+
+        // 5. Create TENANT ADMIN User
+        Users user = new Users();
+        user.setUsername(registrationRequest.getUserName());
+        user.setEmail(registrationRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+        user.setRole(Role.ROLE_TENANT_ADMIN);
+        user.setTenant(tenant);
+        user.setEmailVerified(false);
+        userRepo.save(user);
+
+        // 6. Generate email verification token
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryTime(LocalDateTime.now().plusHours(tokenExpirationHours));
+        emailTokenRepo.save(verificationToken);
+
+        // 7. Send verification email — skip gracefully if not configured
+        if (isEmailConfigured()) {
+            try {
+                String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
+                emailService.sendEmail(registrationRequest.getEmail(),
+                        "Verify your email",
+                        "Please click the following link to verify your email: " + verifyLink);
+                log.info("Verification email sent to: {}", registrationRequest.getEmail());
+            } catch (Exception e) {
+                log.warn("Failed to send verification email to: {} — user was still created successfully",
+                        registrationRequest.getEmail(), e);
+            }
+        } else {
+            log.info("Email service not configured — skipping verification email for: {}",
+                    registrationRequest.getEmail());
+        }
+
+        return new RegistrationResponse(user.getUsername(), user.getEmail());
+    }
+
+    public void resendVerificationEmail(String email) {
+        Users user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("No account found with email: " + email));
+
+        if (user.isEmailVerified()) {
+            throw new BusinessException("Email is already verified.");
+        }
+
+        emailTokenRepo.deleteByUser(user);
+
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryTime(LocalDateTime.now().plusHours(tokenExpirationHours));
+        emailTokenRepo.save(verificationToken);
+
+        if (!isEmailConfigured()) {
+            log.info("Email service not configured — skipping resend verification email");
+            return;
+        }
+        try {
+            String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
+            emailService.sendEmail(email, "Verify your email",
+                    "Please click the following link to verify your email: " + verifyLink);
+            log.info("Verification email resent to: {}", email);
+        } catch (Exception e) {
+            log.warn("Failed to resend verification email to: {}", email, e);
+        }
+    }
+
+    public Users getUserByEmail(String email) {
+        Long tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
+            throw new BusinessException("Tenant context not resolved. Please ensure your API key is valid.");
+        }
+        return userRepo.findByEmailAndTenant_Id(email, tenantId);
+    }
+
+    private boolean isEmailConfigured() {
+        return mailUsername != null && !mailUsername.isBlank()
+                && !mailUsername.contains("placeholder")
+                && mailPassword != null && !mailPassword.isBlank()
+                && !mailPassword.contains("placeholder");
+    }
+}

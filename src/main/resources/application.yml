@@ -1,22 +1,17 @@
 server:
   port: ${PORT:${SERVER_PORT:8080}}
 
-# spring:
-#   config:
-#     import: optional:file:.env.dev[.properties]
+spring:
   application:
     name: saas
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
   datasource:
-    url: ${DATABASE_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/${DATABASE_NAME:railway}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true}
+    url: ${DATABASE_URL:jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/${DATABASE_NAME:saasdb}?allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true}
     username: ${DATABASE_USER_NAME:${DATABASE_USER:root}}
     password: ${DATABASE_USER_PASSWORD:${DATABASE_PASS:}}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-  autoconfigure:
-    exclude:
 
   jpa:
     hibernate:
@@ -34,7 +29,6 @@ server:
     password: ${MAIL_PASSWORD:}
     protocol: smtp
     default-encoding: UTF-8
-
     properties:
       mail:
         smtp:
@@ -46,8 +40,6 @@ server:
           timeout: 5000
           writetimeout: 5000
 
-
-
 application:
   security:
     jwt:
@@ -55,3 +47,15 @@ application:
       expiration: ${JWT_EXPIRATION:3600000}
   cors:
     default-origins: ${CORS_DEFAULT_ORIGINS:http://localhost:3000,http://localhost:8080}
+
+email:
+  token:
+    expiration-hours: 24
+
+saas:
+  insights:
+    yearly-switch-threshold: 500
+    entertainment-category: Entertainment
+    entertainment-max-count: 2
+  churn:
+    discount-code: ${CHURN_DISCOUNT_CODE:KEEP20}
