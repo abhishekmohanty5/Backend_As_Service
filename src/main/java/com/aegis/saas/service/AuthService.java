@@ -7,6 +7,7 @@ import com.aegis.saas.entity.EmailVerificationToken;
 import com.aegis.saas.entity.Users;
 import com.aegis.saas.exception.BusinessException;
 import com.aegis.saas.exception.InvalidCredentialException;
+import com.aegis.saas.exception.UnauthorizedException;
 import com.aegis.saas.repository.EmailVerificationTokenRepo;
 import com.aegis.saas.repository.UserRepo;
 import jakarta.transaction.Transactional;
@@ -37,7 +38,7 @@ public class AuthService {
         }
 
         if (!user.isEmailVerified()) {
-            throw new InvalidCredentialException(
+            throw new UnauthorizedException(
                     "Email not verified. Please check your inbox or use the resend verification option.");
         }
 

@@ -5,6 +5,7 @@ import com.aegis.saas.dto.SubscriptionStatsDto;
 import com.aegis.saas.dto.UserSubscriptionDto;
 import com.aegis.saas.entity.UserSubscription;
 import com.aegis.saas.service.UserSubscriptionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,12 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+@Tag(name = "Tenant User Subscriptions", description = "Tenant Admin manages end-user subscriptions")
 @RestController
-@RequestMapping("/api/user-subscriptions")
+@RequestMapping("/api/v1/tenant-admin/user-subscriptions")
 @RequiredArgsConstructor
 public class UserSubscriptionController {
+
 
         private final UserSubscriptionService userSubscriptionService;
 

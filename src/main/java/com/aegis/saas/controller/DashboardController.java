@@ -1,6 +1,7 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.dto.DashboardDto;
 import com.aegis.saas.service.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+@Tag(name = "Tenant Admin - Dashboard", description = "Developer console overview: tenant info, plan expiry, API credentials and usage stats")
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/v1/tenant-admin/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
 

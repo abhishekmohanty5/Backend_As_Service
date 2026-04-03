@@ -1,6 +1,7 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.dto.PlanRequest;
 import com.aegis.saas.entity.Plan;
 import com.aegis.saas.service.PlanService;
@@ -13,8 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Super Admin - Engine Plans", description = "Create and manage the infrastructure-level pricing plans (FREE, PRO, ENTERPRISE)")
 @RestController
-@RequestMapping("/api/admin/plan")
+@RequestMapping("/api/v1/super-admin/engine-plans")
 public class PlanController {
 
 

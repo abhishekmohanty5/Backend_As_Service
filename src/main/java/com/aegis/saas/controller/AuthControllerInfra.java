@@ -1,6 +1,7 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.dto.LoginRequest;
 import com.aegis.saas.dto.LoginResponse;
 import com.aegis.saas.dto.RegistrationRequest;
@@ -16,8 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+@Tag(name = "Auth - Tenant Registration", description = "Tenant company registration, login and email verification")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthControllerInfra {
 
     @Autowired

@@ -812,3 +812,4 @@ Hibernate:
 2026-04-02T11:50:06.153+05:30 DEBUG 29092 --- [saas] [nio-8080-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [AppResponse(message=error, data=Invalid credentials. Please try again., status=401, timestamp=2026-0 (truncated)...]
 2026-04-02T11:50:06.154+05:30 DEBUG 29092 --- [saas] [nio-8080-exec-2] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.aegis.saas.exception.InvalidCredentialException: Invalid credentials. Please try again.]
 2026-04-02T11:50:06.154+05:30 DEBUG 29092 --- [saas] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed 401 UNAUTHORIZED
+2026-04-02T16:41:58.580+05:30  WARN 29092 --- [saas] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3h17s997ms548┬╡s800ns).

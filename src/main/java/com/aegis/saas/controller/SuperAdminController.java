@@ -1,6 +1,7 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.entity.Tenant;
 import com.aegis.saas.repository.TenantRepo;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Super Admin - Tenants", description = "Platform-level tenant management for the Aegis platform owner")
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/v1/super-admin")
 @RequiredArgsConstructor
 public class SuperAdminController {
 

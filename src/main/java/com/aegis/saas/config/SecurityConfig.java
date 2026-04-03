@@ -28,8 +28,8 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
+    private final com.aegis.saas.auth.SubscriptionEnforcementFilter subscriptionEnforcementFilter;
 
     @Value("${application.cors.default-origins}")
     private String corsDefaultOrigins;
@@ -40,18 +40,23 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/public", "/error").permitAll()
-                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login", "/api/v1/tenant-plans")
-                        .permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/developer/**", "/api/tenant-admin/**")
-                        .hasRole("TENANT_ADMIN")
-                        .requestMatchers("/api/user-subscriptions/**").hasAnyRole("TENANT_ADMIN", "USER")
-                        .requestMatchers("/api/dashboard", "/api/dashboard/**").authenticated()
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/api/v1/health/**",
+                                "/error",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login", "/api/v1/users/plans").permitAll()
+                        .requestMatchers("/api/v1/super-admin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/v1/tenant-admin/**").hasAnyRole("TENANT_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/v1/users/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(subscriptionEnforcementFilter, JWTAuthenticationFilter.class);
         return http.build();
     }
 

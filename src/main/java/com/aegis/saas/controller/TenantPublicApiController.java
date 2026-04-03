@@ -1,39 +1,25 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.*;
-import com.aegis.saas.entity.Role;
-import com.aegis.saas.entity.Tenant;
-import com.aegis.saas.entity.TenantPlan;
-import com.aegis.saas.entity.Users;
-import com.aegis.saas.entity.UserSubscription;
-import com.aegis.saas.entity.SubscriptionStatus;
-import com.aegis.saas.repository.TenantPlanRepo;
-import com.aegis.saas.repository.TenantRepo;
-import com.aegis.saas.repository.UserRepo;
-import com.aegis.saas.repository.UserSubscriptionRepo;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.service.AiService;
+import com.aegis.saas.service.TenantPublicApiService;
 import com.aegis.saas.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.time.LocalDate;
 
+@Tag(name = "End Users - BaaS API", description = "Backend-as-a-Service endpoints consumed by tenant's end users (register, login, subscribe, AI features)")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class TenantPublicApiController {
 
-    private final UserRepo userRepo;
-    private final TenantRepo tenantRepo;
-    private final TenantPlanRepo tenantPlanRepo;
-    private final UserSubscriptionRepo userSubscriptionRepo;
-    private final PasswordEncoder passwordEncoder;
     private final AiService aiService;
-    private final com.aegis.saas.auth.JWTService jwtService;
+    private final TenantPublicApiService tenantPublicApiService;
 
     @GetMapping("/ai/analytics")
     public ResponseEntity<AppResponse<String>> getSubscriptionAnalytics() {
@@ -90,13 +76,6 @@ public class TenantPublicApiController {
             throw new RuntimeException("Unauthorized API access");
         }
 
-        // Verify the user belongs to the tenant
-        Users user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        if (!user.getTenant().getId().equals(tenantId)) {
-            throw new RuntimeException("User belongs to a different Tenant");
-        }
-
         String prediction = aiService.predictChurnRisk(userId, tenantId);
 
         AppResponse<String> response = AppResponse.<String>builder()
@@ -116,19 +95,7 @@ public class TenantPublicApiController {
             throw new RuntimeException("Unauthorized API access");
         }
 
-        // Only return ACTIVE plans to the public, preventing access to sensitive/draft
-        // plans
-        java.util.List<TenantPlan> plans = tenantPlanRepo.findByTenantIdAndActiveTrue(tenantId);
-
-        java.util.List<TenantPlanResponseDto> dtos = plans.stream().map(p -> TenantPlanResponseDto.builder()
-                .id(p.getId())
-                .name(p.getName())
-                .description(p.getDescription())
-                .price(p.getPrice())
-                .billingCycle(p.getBillingCycle())
-                .features(p.getFeatures())
-                .active(p.isActive())
-                .build()).toList();
+        java.util.List<TenantPlanResponseDto> dtos = tenantPublicApiService.getPublicTenantPlans(tenantId);
 
         AppResponse<java.util.List<TenantPlanResponseDto>> response = AppResponse.<java.util.List<TenantPlanResponseDto>>builder()
                 .message("Successfully retrieved public Tenant Plans")
@@ -147,28 +114,7 @@ public class TenantPublicApiController {
             throw new RuntimeException("Unauthorized API access");
         }
 
-        Tenant tenant = tenantRepo.findById(tenantId)
-                .orElseThrow(() -> new RuntimeException("Tenant not resolved from API Key"));
-
-        if (userRepo.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
-        }
-
-        Users user = new Users();
-        user.setUsername(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.ROLE_USER);
-        user.setTenant(tenant);
-
-        userRepo.save(user);
-
-        TenantUserDto dto = TenantUserDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .build();
+        TenantUserDto dto = tenantPublicApiService.registerEndUser(request, tenantId);
 
         AppResponse<TenantUserDto> response = AppResponse.<TenantUserDto>builder()
                 .message("Successfully registered End User")
@@ -187,21 +133,7 @@ public class TenantPublicApiController {
             throw new RuntimeException("Unauthorized API access");
         }
 
-        Users user = userRepo.findByEmailAndTenant_Id(request.getEmail(), tenantId);
-        if (user == null) {
-            throw new RuntimeException("Invalid credentials or user not found in this tenant.");
-        }
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials.");
-        }
-
-        String token = jwtService.generateToken(user.getEmail(), tenantId);
-
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(token);
-        loginResponse.setEmail(user.getEmail());
-        loginResponse.setRole(user.getRole());
+        LoginResponse loginResponse = tenantPublicApiService.loginEndUser(request, tenantId);
 
         AppResponse<LoginResponse> response = AppResponse.<LoginResponse>builder()
                 .message("Successfully logged in End User")
@@ -221,67 +153,7 @@ public class TenantPublicApiController {
             throw new RuntimeException("Unauthorized API access");
         }
 
-        Users user = userRepo.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!user.getTenant().getId().equals(tenantId)) {
-            throw new RuntimeException("User belongs to a different Tenant");
-        }
-
-        TenantPlan plan = tenantPlanRepo.findById(request.getTenantPlanId())
-                .orElseThrow(() -> new RuntimeException("Tenant Plan not found"));
-
-        if (!plan.getTenant().getId().equals(tenantId)) {
-            throw new RuntimeException("Tenant Plan belongs to a different Tenant");
-        }
-
-        LocalDate startDate = LocalDate.now();
-        LocalDate nextBillingDate = startDate;
-
-        // Simple billing cycle logic for demo
-        if (plan.getBillingCycle() != null) {
-            switch (plan.getBillingCycle()) {
-                case MONTHLY:
-                    nextBillingDate = startDate.plusMonths(1);
-                    break;
-                case YEARLY:
-                    nextBillingDate = startDate.plusYears(1);
-                    break;
-                case WEEKLY:
-                    nextBillingDate = startDate.plusWeeks(1);
-                    break;
-            }
-        } else {
-            nextBillingDate = startDate.plusMonths(1);
-        }
-
-        UserSubscription subscription = UserSubscription.builder()
-                .user(user)
-                .subscriptionName(plan.getName())
-                .tenantPlan(plan)
-                .amount(plan.getPrice())
-                .billingCycle(plan.getBillingCycle())
-                .startDate(startDate)
-                .nextBillingDate(nextBillingDate)
-                .status(SubscriptionStatus.ACTIVE)
-                .notes(request.getNotes())
-                .build();
-
-        userSubscriptionRepo.save(subscription);
-
-        UserSubscriptionDto dto = UserSubscriptionDto.builder()
-                .id(subscription.getId())
-                .userId(subscription.getUser().getId())
-                .tenantPlanId(subscription.getTenantPlan().getId())
-                .username(subscription.getUser().getUsername())
-                .subscriptionName(subscription.getSubscriptionName())
-                .amount(subscription.getAmount())
-                .billingCycle(subscription.getBillingCycle())
-                .startDate(subscription.getStartDate())
-                .nextBillingDate(subscription.getNextBillingDate())
-                .status(subscription.getStatus())
-                .notes(subscription.getNotes())
-                .build();
+        UserSubscriptionDto dto = tenantPublicApiService.subscribeUser(request, tenantId);
 
         AppResponse<UserSubscriptionDto> response = AppResponse.<UserSubscriptionDto>builder()
                 .message("Successfully subscribed End User to Tenant Plan")
@@ -293,3 +165,4 @@ public class TenantPublicApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
+

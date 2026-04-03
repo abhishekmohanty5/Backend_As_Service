@@ -1,6 +1,7 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.entity.Plan;
 import com.aegis.saas.service.PlanService;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Public - Health & Plans", description = "Public endpoints: health check and engine plan listing. No authentication required.")
 @RestController
-@RequestMapping("/api/public")
+@RequestMapping("/api/v1/health")
 @RequiredArgsConstructor
 public class PublicController {
 
