@@ -1,6 +1,7 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.dto.EnginePlanUpgradeRequest;
 import com.aegis.saas.dto.TenantSubscriptionResponseDto;
 import com.aegis.saas.entity.TenantSubscription;
@@ -12,8 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+@Tag(name = "Tenant Admin - Billing", description = "Manage the tenant's engine plan subscription (upgrade, view current plan)")
 @RestController
-@RequestMapping("/api/tenant-admin/engine-subscription")
+@RequestMapping("/api/v1/tenant-admin/billing")
 @RequiredArgsConstructor
 public class EngineSubscriptionController {
 

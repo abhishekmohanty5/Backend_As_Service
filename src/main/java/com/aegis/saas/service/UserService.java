@@ -10,7 +10,6 @@ import com.aegis.saas.repository.PlanRepo;
 import com.aegis.saas.repository.TenantRepo;
 import com.aegis.saas.repository.TenantSubscriptionRepo;
 import com.aegis.saas.repository.UserRepo;
-import com.aegis.saas.tenant.TenantContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,13 +49,20 @@ public class UserService {
     public RegistrationResponse addUser(RegistrationRequest registrationRequest) {
 
         // 1. Email uniqueness check FIRST — before any DB writes
-        if (userRepo.existsByEmail(registrationRequest.getEmail())) {
-            throw new BusinessException("Email is already registered. Please login or use a different email.");
+        java.util.Optional<Users> existingUserOpt = userRepo.findByEmail(registrationRequest.getEmail());
+        if (existingUserOpt.isPresent()) {
+            Users existingUser = existingUserOpt.get();
+            if (!existingUser.isEmailVerified()) {
+                resendVerificationEmail(existingUser.getEmail());
+                throw new com.aegis.saas.exception.BusinessException("Email is registered but unverified. A new verification email has been sent.");
+            } else {
+                throw new com.aegis.saas.exception.BusinessException("Email is already registered. Please login or use a different email.");
+            }
         }
 
         // 2. Fetch default FREE plan
         Plan defaultPlan = planRepo.findByName("FREE").orElseThrow(
-                () -> new ResourceNotFoundException("Default FREE plan not found. Please contact support."));
+                () -> new RuntimeException("Default FREE plan not found. Please contact support."));
 
         // 3. Create Tenant
         Tenant tenant = new Tenant();
@@ -92,7 +98,7 @@ public class UserService {
         // 7. Send verification email — skip gracefully if not configured
         if (isEmailConfigured()) {
             try {
-                String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
+                String verifyLink = baseUrl + "/api/v1/auth/verify-email?token=" + token;
                 emailService.sendEmail(registrationRequest.getEmail(),
                         "Verify your email",
                         "Please click the following link to verify your email: " + verifyLink);
@@ -131,21 +137,13 @@ public class UserService {
             return;
         }
         try {
-            String verifyLink = baseUrl + "/api/auth/verify-email?token=" + token;
+            String verifyLink = baseUrl + "/api/v1/auth/verify-email?token=" + token;
             emailService.sendEmail(email, "Verify your email",
                     "Please click the following link to verify your email: " + verifyLink);
             log.info("Verification email resent to: {}", email);
         } catch (Exception e) {
             log.warn("Failed to resend verification email to: {}", email, e);
         }
-    }
-
-    public Users getUserByEmail(String email) {
-        Long tenantId = TenantContext.getTenantId();
-        if (tenantId == null) {
-            throw new BusinessException("Tenant context not resolved. Please ensure your API key is valid.");
-        }
-        return userRepo.findByEmailAndTenant_Id(email, tenantId);
     }
 
     private boolean isEmailConfigured() {

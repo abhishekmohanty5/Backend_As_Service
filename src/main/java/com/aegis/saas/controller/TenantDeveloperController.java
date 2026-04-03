@@ -1,14 +1,12 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.*;
-import com.aegis.saas.entity.SubscriptionStatus;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.entity.Tenant;
 import com.aegis.saas.entity.TenantPlan;
 import com.aegis.saas.entity.Users;
-import com.aegis.saas.entity.UserSubscription;
 import com.aegis.saas.repository.TenantRepo;
 import com.aegis.saas.repository.UserRepo;
-import com.aegis.saas.repository.UserSubscriptionRepo;
 import com.aegis.saas.service.TenantPlanService;
 import com.aegis.saas.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +19,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+@Tag(name = "Tenant Admin - Settings", description = "Manage API keys, tenant plans and view end users")
 @RestController
-@RequestMapping("/api/developer")
+@RequestMapping("/api/v1/tenant-admin")
 @RequiredArgsConstructor
 public class TenantDeveloperController {
 
         private final TenantPlanService tenantPlanService;
         private final TenantRepo tenantRepo;
         private final UserRepo userRepo;
-        private final UserSubscriptionRepo userSubscriptionRepo;
 
         // --- API KEY MANAGEMENT ---
 
@@ -116,6 +114,8 @@ public class TenantDeveloperController {
                 return ResponseEntity.ok(response);
         }
 
+        // --- USER MANAGEMENT ---
+
         @GetMapping("/users")
         public ResponseEntity<AppResponse<List<TenantUserDto>>> getTenantUsers() {
                 Long tenantId = TenantContext.getTenantId();
@@ -131,94 +131,6 @@ public class TenantDeveloperController {
 
                 AppResponse<List<TenantUserDto>> response = AppResponse.<List<TenantUserDto>>builder()
                                 .message("Successfully retrieved End Users")
-                                .data(dtos)
-                                .status(HttpStatus.OK.value())
-                                .timestamp(LocalDateTime.now())
-                                .build();
-
-                return ResponseEntity.ok(response);
-        }
-
-        @GetMapping("/user-subscriptions")
-        public ResponseEntity<AppResponse<List<UserSubscriptionDto>>> getTenantUserSubscriptions() {
-                Long tenantId = TenantContext.getTenantId();
-                List<UserSubscription> subscriptions = userSubscriptionRepo.findByUser_TenantId(tenantId);
-                List<UserSubscriptionDto> dtos = subscriptions.stream()
-                                .map(s -> UserSubscriptionDto.builder()
-                                                .id(s.getId())
-                                                .userId(s.getUser().getId())
-                                                .tenantPlanId(s.getTenantPlan().getId())
-                                                .username(s.getUser().getUsername())
-                                                .subscriptionName(s.getSubscriptionName())
-                                                .amount(s.getAmount())
-                                                .billingCycle(s.getBillingCycle())
-                                                .startDate(s.getStartDate())
-                                                .nextBillingDate(s.getNextBillingDate())
-                                                .status(s.getStatus())
-                                                .notes(s.getNotes())
-                                                .build())
-                                .toList();
-
-                AppResponse<List<UserSubscriptionDto>> response = AppResponse.<List<UserSubscriptionDto>>builder()
-                                .message("Successfully retrieved End User Subscriptions")
-                                .data(dtos)
-                                .status(HttpStatus.OK.value())
-                                .timestamp(LocalDateTime.now())
-                                .build();
-
-                return ResponseEntity.ok(response);
-        }
-
-        // --- SUBSCRIBER STATS ---
-
-        @GetMapping("/tenant-stats")
-        public ResponseEntity<AppResponse<Map<String, Long>>> getTenantStats() {
-                Long tenantId = TenantContext.getTenantId();
-                List<UserSubscription> all = userSubscriptionRepo.findByUser_TenantId(tenantId);
-
-                long total = all.size();
-                long active = all.stream().filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE).count();
-                long cancelled = all.stream().filter(s -> s.getStatus() == SubscriptionStatus.CANCELLED).count();
-                long expired = all.stream().filter(s -> s.getStatus() == SubscriptionStatus.EXPIRED).count();
-
-                Map<String, Long> statsMap = new HashMap<>();
-                statsMap.put("total", total);
-                statsMap.put("active", active);
-                statsMap.put("cancelled", cancelled);
-                statsMap.put("pending", expired);
-
-                AppResponse<Map<String, Long>> response = AppResponse.<Map<String, Long>>builder()
-                                .message("Successfully retrieved Tenant Stats")
-                                .data(statsMap)
-                                .status(HttpStatus.OK.value())
-                                .timestamp(LocalDateTime.now())
-                                .build();
-
-                return ResponseEntity.ok(response);
-        }
-
-        @GetMapping("/tenant-subscribers")
-        public ResponseEntity<AppResponse<List<UserSubscriptionDto>>> getTenantSubscribers() {
-                Long tenantId = TenantContext.getTenantId();
-                List<UserSubscription> subscriptions = userSubscriptionRepo.findByUser_TenantId(tenantId);
-                List<UserSubscriptionDto> dtos = subscriptions.stream()
-                                .map(s -> UserSubscriptionDto.builder()
-                                                .id(s.getId())
-                                                .userId(s.getUser().getId())
-                                                .tenantPlanId(s.getTenantPlan().getId())
-                                                .username(s.getUser().getUsername())
-                                                .subscriptionName(s.getSubscriptionName())
-                                                .amount(s.getAmount())
-                                                .billingCycle(s.getBillingCycle())
-                                                .startDate(s.getStartDate())
-                                                .nextBillingDate(s.getNextBillingDate())
-                                                .status(s.getStatus())
-                                                .notes(s.getNotes())
-                                                .build())
-                                .toList();
-
-                AppResponse<List<UserSubscriptionDto>> response = AppResponse.<List<UserSubscriptionDto>>builder()
-                                .message("Successfully retrieved Tenant Subscribers")
                                 .data(dtos)
                                 .status(HttpStatus.OK.value())
                                 .timestamp(LocalDateTime.now())
