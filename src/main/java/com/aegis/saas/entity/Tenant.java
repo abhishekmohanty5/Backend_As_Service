@@ -42,6 +42,7 @@ public class Tenant {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<TenantSubscription> subscriptions = new ArrayList<>();

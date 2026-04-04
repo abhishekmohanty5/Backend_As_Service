@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Tag(name = "Public - Health & Plans", description = "Public endpoints: health check and engine plan listing. No authentication required.")
+@Tag(name = "Public - Plans", description = "Publicly accessible engine plan listing. No authentication required.")
 @RestController
-@RequestMapping("/api/v1/health")
+@RequestMapping("/api/v1/public/plans")
 @RequiredArgsConstructor
 public class PublicController {
 

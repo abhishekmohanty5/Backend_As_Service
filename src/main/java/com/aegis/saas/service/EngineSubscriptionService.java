@@ -1,5 +1,6 @@
 package com.aegis.saas.service;
 
+import com.aegis.saas.dto.TenantSubscriptionResponseDto;
 import com.aegis.saas.entity.Plan;
 import com.aegis.saas.entity.SubscriptionStatus;
 import com.aegis.saas.entity.Tenant;
@@ -24,6 +25,7 @@ public class EngineSubscriptionService {
     private final PlanRepo planRepo;
     private final TenantSubscriptionRepo tenantSubscriptionRepo;
 
+    @Transactional
     public TenantSubscription getCurrentSubscription() {
         Long tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
@@ -31,6 +33,12 @@ public class EngineSubscriptionService {
         }
         return tenantSubscriptionRepo.findFirstByTenantIdOrderByCreatedAtDesc(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("No active subscription found for this tenant."));
+    }
+
+    @Transactional
+    public TenantSubscriptionResponseDto upgradePlanDto(Long newPlanId, String billingInterval, String transactionId) {
+        TenantSubscription upgradedSub = upgradePlan(newPlanId, billingInterval, transactionId);
+        return mapToDto(upgradedSub);
     }
 
     @Transactional
@@ -70,5 +78,24 @@ public class EngineSubscriptionService {
         newSub.setStartDate(LocalDateTime.now());
         newSub.setExpireDate(LocalDateTime.now().plusDays(durationDays));
         return tenantSubscriptionRepo.save(newSub);
+    }
+
+    @Transactional
+    public TenantSubscriptionResponseDto getCurrentSubscriptionDto() {
+        TenantSubscription sub = getCurrentSubscription();
+        return mapToDto(sub);
+    }
+
+    private TenantSubscriptionResponseDto mapToDto(TenantSubscription sub) {
+        return TenantSubscriptionResponseDto.builder()
+                .id(sub.getId())
+                .tenantName(sub.getTenant().getName())
+                .planName(sub.getPlan().getName())
+                .amount(sub.getPlan().getPrice())
+                .durationInDays(sub.getPlan().getDurationInDays())
+                .startDate(sub.getStartDate())
+                .expireDate(sub.getExpireDate())
+                .status(sub.getStatus().name())
+                .build();
     }
 }
