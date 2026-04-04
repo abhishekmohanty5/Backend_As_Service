@@ -12,6 +12,8 @@ import com.aegis.saas.repository.UserSubscriptionRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -63,6 +65,10 @@ public class UserSubscriptionService {
 
     public List<UserSubscription> getUserSubscriptions() {
         return userSubscriptionRepo.findByUserId(authContext.getCurrentUserId());
+    }
+
+    public Page<UserSubscription> getUserSubscriptionsPaginated(Pageable pageable) {
+        return userSubscriptionRepo.findByUserId(authContext.getCurrentUserId(), pageable);
     }
 
     public List<UserSubscription> getActiveSubscription() {

@@ -1,12 +1,15 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import com.aegis.saas.dto.PaginatedResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.aegis.saas.dto.PlanRequest;
 import com.aegis.saas.entity.Plan;
 import com.aegis.saas.service.PlanService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +22,12 @@ import java.util.List;
 @RequestMapping("/api/v1/super-admin/engine-plans")
 public class PlanController {
 
-
     private  final PlanService planService;
 
     @Autowired
     public PlanController(PlanService planService) {
         this.planService = planService;
     }
-
 
     @PostMapping
     public ResponseEntity<AppResponse<String>> createPlan(
@@ -65,11 +66,21 @@ public class PlanController {
     }
 
     @GetMapping
-    public ResponseEntity<AppResponse<List<Plan>>> getAllPlans() {
+    public ResponseEntity<AppResponse<PaginatedResponse<Plan>>> getAllPlans(Pageable pageable) {
+        Page<Plan> page = planService.findAllPaginated(pageable);
+        PaginatedResponse<Plan> data = PaginatedResponse.from(page);
+
+        return ResponseEntity.ok(
+                new AppResponse<>("Success", data, HttpStatus.OK.value(), LocalDateTime.now())
+        );
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<AppResponse<List<Plan>>> getAllPlansNoPagination() {
         List<Plan> data = planService.findAll();
 
         return ResponseEntity.ok(
-                new AppResponse<>("Success",data,HttpStatus.OK.value(),LocalDateTime.now())
+                new AppResponse<>("Success", data, HttpStatus.OK.value(), LocalDateTime.now())
         );
     }
 }
