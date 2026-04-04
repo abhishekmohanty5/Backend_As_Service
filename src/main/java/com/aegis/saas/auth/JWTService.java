@@ -24,6 +24,9 @@ public class JWTService {
     @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
+    @Value("${application.security.refresh-token.expiration:604800000}")  // 7 days default
+    private long refreshTokenExpiration;
+
     private SecretKey getSecretKey() {
         byte[] encoded = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(encoded);
@@ -65,5 +68,28 @@ public class JWTService {
 
     public String extractSubject(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    public String generateRefreshToken(String email, Long tenantId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tenantId", tenantId);
+        claims.put("type", "refresh");
+        return createToken(claims, email, refreshTokenExpiration);
+    }
+
+    private String createToken(Map<String, Object> claims, String email, long expiration) {
+        Date now = new Date(System.currentTimeMillis());
+        Date expiry = new Date(now.getTime() + expiration);
+        return Jwts.builder()
+                .claims(claims)
+                .subject(email)
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(getSecretKey())
+                .compact();
+    }
+
+    public Long extractTenantId(String token) {
+        return extractAllClaims(token).get("tenantId", Long.class);
     }
 }

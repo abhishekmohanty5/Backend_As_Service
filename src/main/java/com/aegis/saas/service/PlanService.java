@@ -6,6 +6,8 @@ import com.aegis.saas.repository.PlanRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,6 +36,10 @@ public class PlanService {
     @Cacheable(cacheNames = "Plans")
     public List<Plan> findAll() {
         return planRepo.findAll();
+    }
+
+    public Page<Plan> findAllPaginated(Pageable pageable) {
+        return planRepo.findAll(pageable);
     }
 
 

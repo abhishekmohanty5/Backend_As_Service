@@ -1,12 +1,15 @@
 package com.aegis.saas.controller;
 
 import com.aegis.saas.dto.AppResponse;
+import com.aegis.saas.dto.PaginatedResponse;
 import com.aegis.saas.dto.SubscriptionStatsDto;
 import com.aegis.saas.dto.UserSubscriptionDto;
 import com.aegis.saas.entity.UserSubscription;
 import com.aegis.saas.service.UserSubscriptionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +45,22 @@ public class UserSubscriptionController {
         }
 
         @GetMapping
-        public ResponseEntity<AppResponse<List<UserSubscription>>> getAllSubscriptions() {
+        public ResponseEntity<AppResponse<PaginatedResponse<UserSubscription>>> getAllSubscriptions(Pageable pageable) {
+                Page<UserSubscription> subscriptions = userSubscriptionService.getUserSubscriptionsPaginated(pageable);
+                PaginatedResponse<UserSubscription> data = PaginatedResponse.from(subscriptions);
+
+                AppResponse<PaginatedResponse<UserSubscription>> response = AppResponse.<PaginatedResponse<UserSubscription>>builder()
+                                .message("Success")
+                                .data(data)
+                                .status(HttpStatus.OK.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
+        @GetMapping("/all")
+        public ResponseEntity<AppResponse<List<UserSubscription>>> getAllSubscriptionsNoPagination() {
                 List<UserSubscription> subscriptions = userSubscriptionService.getUserSubscriptions();
 
                 AppResponse<List<UserSubscription>> response = AppResponse.<List<UserSubscription>>builder()

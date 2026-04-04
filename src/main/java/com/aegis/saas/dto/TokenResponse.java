@@ -1,18 +1,17 @@
 package com.aegis.saas.dto;
 
-import com.aegis.saas.entity.Role;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
-    private String email;
-    private String token;  // access token
+@AllArgsConstructor
+@Builder
+public class TokenResponse {
+    private String accessToken;
     private String refreshToken;
     private String tokenType;
     private long expiresIn;  // in seconds
-    private Role role;
 }
