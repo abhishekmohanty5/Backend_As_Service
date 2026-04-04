@@ -34,7 +34,7 @@ public class SubscriptionEnforcementFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         if (auth == null
                 || path.startsWith("/api/v1/auth")
-                || path.startsWith("/api/v1/health")
+                || path.startsWith("/api/v1/public")
                 || path.equals("/api/v1/users/register")
                 || path.equals("/api/v1/users/login")
                 || path.equals("/api/v1/users/plans")) {

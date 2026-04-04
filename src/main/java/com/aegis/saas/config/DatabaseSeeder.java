@@ -29,7 +29,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             Plan defaultPlan = new Plan();
             defaultPlan.setName("FREE");
             defaultPlan.setPrice(BigDecimal.ZERO);
-            defaultPlan.setDurationInDays(30);
+            defaultPlan.setDurationInDays(14);
             defaultPlan.setActive(true);
             defaultPlan.setCreatedAt(LocalDateTime.now());
             defaultPlan.setUpdatedAt(LocalDateTime.now());

@@ -39,7 +39,7 @@ Write-Host "--- 1. HEALTH CHECK ---"
 $health = Test-Endpoint -Name "Public Health" -Method "GET" -Url "http://localhost:8080/api/v1/health"
 
 Write-Host "`n--- 2. SUPER ADMIN ---"
-$loginBody = '{"email":"abhishekmohanty78962@gmail.com","password":"Abhi@2004"}'
+$loginBody = @{ email = "abhishekmohanty78962@gmail.com"; password = "Abhi@2004" } | ConvertTo-Json -Compress
 $loginResp = Test-Endpoint -Name "Login Super Admin" -Method "POST" -Url "http://localhost:8080/api/v1/auth/login" -Body $loginBody
 $saToken = ""
 if ($loginResp -match '"token":"([^"]+)"') {
@@ -54,7 +54,7 @@ if ($saToken -ne "") {
 
 Write-Host "`n--- 3. TENANT ADMIN ---"
 # Using the test account you asked me to register earlier via Swagger
-$tenantLoginBody = '{"email":"abhishekmohanty78962@gmail.com","password":"Abhi@2004"}'
+$tenantLoginBody = @{ email = "abhishekmohanty78962@gmail.com"; password = "Abhi@2004" } | ConvertTo-Json -Compress
 $tenantLoginResp = Test-Endpoint -Name "Login Tenant Admin" -Method "POST" -Url "http://localhost:8080/api/v1/auth/login" -Body $tenantLoginBody
 $taToken = ""
 if ($tenantLoginResp -match '"token":"([^"]+)"') {

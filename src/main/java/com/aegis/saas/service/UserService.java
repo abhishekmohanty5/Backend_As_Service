@@ -6,11 +6,9 @@ import com.aegis.saas.entity.*;
 import com.aegis.saas.exception.BusinessException;
 import com.aegis.saas.exception.ResourceNotFoundException;
 import com.aegis.saas.repository.EmailVerificationTokenRepo;
-import com.aegis.saas.repository.PlanRepo;
 import com.aegis.saas.repository.TenantRepo;
-import com.aegis.saas.repository.TenantSubscriptionRepo;
 import com.aegis.saas.repository.UserRepo;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +26,6 @@ public class UserService {
 
     private final UserRepo userRepo;
     private final TenantRepo tenantRepo;
-    private final PlanRepo planRepo;
-    private final TenantSubscriptionRepo tenantSubscriptionRepo;
     private final EmailVerificationTokenRepo emailTokenRepo;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
@@ -46,38 +42,31 @@ public class UserService {
     @Value("${spring.mail.password:}")
     private String mailPassword;
 
+    @Transactional(noRollbackFor = com.aegis.saas.exception.UnverifiedEmailException.class)
     public RegistrationResponse addUser(RegistrationRequest registrationRequest) {
 
-        // 1. Email uniqueness check FIRST — before any DB writes
-        java.util.Optional<Users> existingUserOpt = userRepo.findByEmail(registrationRequest.getEmail());
-        if (existingUserOpt.isPresent()) {
-            Users existingUser = existingUserOpt.get();
-            if (!existingUser.isEmailVerified()) {
-                resendVerificationEmail(existingUser.getEmail());
-                throw new com.aegis.saas.exception.BusinessException("Email is registered but unverified. A new verification email has been sent.");
+        String email=registrationRequest.getEmail();
+        Users existUser= userRepo.findByEmail(email).orElse(null);
+
+
+        if(existUser !=null ){
+            if (!existUser.isEmailVerified()) {
+                resendVerificationEmail(existUser.getEmail());
+                throw new com.aegis.saas.exception.UnverifiedEmailException("Email is registered but unverified. A new verification email has been sent.");
             } else {
-                throw new com.aegis.saas.exception.BusinessException("Email is already registered. Please login or use a different email.");
+                throw new BusinessException("Email is already registered. Please login or use a different email.");
             }
         }
 
-        // 2. Fetch default FREE plan
-        Plan defaultPlan = planRepo.findByName("FREE").orElseThrow(
-                () -> new RuntimeException("Default FREE plan not found. Please contact support."));
-
-        // 3. Create Tenant
+        // 2. Create Tenant (INACTIVE until email verification)
         Tenant tenant = new Tenant();
         tenant.setName(registrationRequest.getTenantName());
         tenant = tenantRepo.save(tenant);
+        // NOTE: No TenantSubscription created here.
+        // The FREE plan subscription (14 days) is created after email verification
+        // so the subscription clock starts from actual verification, not registration.
 
-        // 4. Create Engine Subscription
-        TenantSubscription ts = new TenantSubscription();
-        ts.setTenant(tenant);
-        ts.setPlan(defaultPlan);
-        ts.setStartDate(LocalDateTime.now());
-        ts.setExpireDate(LocalDateTime.now().plusDays(defaultPlan.getDurationInDays()));
-        tenantSubscriptionRepo.save(ts);
-
-        // 5. Create TENANT ADMIN User
+        // 3. Create TENANT ADMIN User
         Users user = new Users();
         user.setUsername(registrationRequest.getUserName());
         user.setEmail(registrationRequest.getEmail());

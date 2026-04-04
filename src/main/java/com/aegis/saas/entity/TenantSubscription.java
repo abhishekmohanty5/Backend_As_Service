@@ -53,7 +53,9 @@ public class TenantSubscription {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.status=SubscriptionStatus.INACTIVE;
+        if (this.status == null) {
+            this.status = SubscriptionStatus.INACTIVE;
+        }
     }
 
     @PreUpdate

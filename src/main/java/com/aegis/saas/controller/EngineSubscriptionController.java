@@ -23,9 +23,7 @@ public class EngineSubscriptionController {
 
     @GetMapping
     public ResponseEntity<AppResponse<TenantSubscriptionResponseDto>> getCurrentSubscription() {
-        TenantSubscription sub = engineSubscriptionService.getCurrentSubscription();
-
-        TenantSubscriptionResponseDto dto = mapToDto(sub);
+        TenantSubscriptionResponseDto dto = engineSubscriptionService.getCurrentSubscriptionDto();
 
         AppResponse<TenantSubscriptionResponseDto> response = new AppResponse<>(
                 "Success", dto, HttpStatus.OK.value(), LocalDateTime.now());
@@ -36,29 +34,13 @@ public class EngineSubscriptionController {
     public ResponseEntity<AppResponse<TenantSubscriptionResponseDto>> upgradeEnginePlan(
             @RequestBody EnginePlanUpgradeRequest request) {
 
-        TenantSubscription upgradedSub = engineSubscriptionService.upgradePlan(
+        TenantSubscriptionResponseDto dto = engineSubscriptionService.upgradePlanDto(
                 request.getTargetPlanId(),
                 request.getBillingInterval(),
                 request.getTransactionId());
 
-        TenantSubscriptionResponseDto dto = mapToDto(upgradedSub);
-
         AppResponse<TenantSubscriptionResponseDto> response = new AppResponse<>(
                 "Successfully upgraded plan", dto, HttpStatus.OK.value(), LocalDateTime.now());
         return ResponseEntity.ok(response);
-    }
-
-    private TenantSubscriptionResponseDto mapToDto(TenantSubscription sub) {
-
-        return TenantSubscriptionResponseDto.builder()
-                .id(sub.getId())
-                .tenantName(sub.getTenant().getName())
-                .planName(sub.getPlan().getName())
-                .amount(sub.getPlan().getPrice())
-                .durationInDays(sub.getPlan().getDurationInDays())
-                .startDate(sub.getStartDate())
-                .expireDate(sub.getExpireDate())
-                .status(sub.getStatus().name())
-                .build();
     }
 }

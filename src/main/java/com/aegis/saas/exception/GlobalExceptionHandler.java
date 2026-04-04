@@ -63,6 +63,14 @@ public class GlobalExceptionHandler {
                 .body(new AppResponse<>("Bad Request", ex.getMessage(), 400, LocalDateTime.now()));
     }
 
+    /** 400 — unverified email logic */
+    @ExceptionHandler(UnverifiedEmailException.class)
+    public ResponseEntity<AppResponse<String>> handleUnverifiedEmailException(UnverifiedEmailException ex) {
+        log.warn("UnverifiedEmailException: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new AppResponse<>("Bad Request", ex.getMessage(), 400, LocalDateTime.now()));
+    }
+
     /** 403 — ownership / permission violation */
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<AppResponse<String>> handleUnauthorized(UnauthorizedException ex) {
