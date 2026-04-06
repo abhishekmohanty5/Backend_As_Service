@@ -33,6 +33,14 @@ build/
 .vscode/
 
 ### Environment Variables ###
-.env.dev
 .env.local
+.env.prod
+.env.dev
 .env.*
+.env
+
+# Garbagepip install git-filter-repo
+*.log
+logs/
+startup-log*.txt
+

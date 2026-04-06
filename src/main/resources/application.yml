@@ -69,7 +69,7 @@ gemini:
   api:
     base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com}
     version: ${GEMINI_API_VERSION:v1beta}
-    key: ${GEMINI_API_KEY:}
+    key: ${GEMINI_API_KEY}
     model: ${GEMINI_MODEL:gemini-2.5-flash}
 
 app:
