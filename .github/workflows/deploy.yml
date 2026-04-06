@@ -76,10 +76,14 @@ jobs:
         run: |
           # Create the directory first via SSH to ensure it exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/app"
+
+          # Write environment file from GitHub secret (supports multiline)
+          printf "%s" "${{ secrets.ENV_PROD_FILE }}" > .env.prod
           
           scp -i private_key.pem -o StrictHostKeyChecking=no \
             ${{ env.APP_JAR_NAME }} \
             Dockerfile.prod \
+            .env.prod \
             docker-compose.prod.yml \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/app/
 
@@ -88,10 +92,10 @@ jobs:
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFSCRIPT'
           cd ~/app/
           # Ensure old container is stopped
-          docker-compose -f docker-compose.prod.yml down --remove-orphans || true
-          # Rebuild and start (using host network)
-          docker-compose -f docker-compose.prod.yml build
-          docker-compose -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.prod.yml down --remove-orphans || true
+          # Rebuild and start
+          docker compose -f docker-compose.prod.yml build
+          docker compose -f docker-compose.prod.yml up -d
           # Cleanup unused images to save disk space on EC2
           docker image prune -f
           EOFSCRIPT

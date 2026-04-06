@@ -9,6 +9,7 @@ import com.aegis.saas.service.EngineSubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class EngineSubscriptionController {
     private final EngineSubscriptionService engineSubscriptionService;
 
     @GetMapping
+    @PreAuthorize("hasRole('TENANT_ADMIN')")
     public ResponseEntity<AppResponse<TenantSubscriptionResponseDto>> getCurrentSubscription() {
         TenantSubscriptionResponseDto dto = engineSubscriptionService.getCurrentSubscriptionDto();
 
@@ -31,6 +33,7 @@ public class EngineSubscriptionController {
     }
 
     @PostMapping("/upgrade")
+    @PreAuthorize("hasRole('TENANT_ADMIN')")
     public ResponseEntity<AppResponse<TenantSubscriptionResponseDto>> upgradeEnginePlan(
             @RequestBody EnginePlanUpgradeRequest request) {
 

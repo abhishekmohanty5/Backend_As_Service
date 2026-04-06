@@ -24,7 +24,7 @@ public class PublicController {
     @GetMapping
     public ResponseEntity<AppResponse<List<Plan>>> getPlans() {
 
-        List<Plan> plans = planService.findAll();
+        List<Plan> plans = planService.findAllActive();
 
         AppResponse<List<Plan>> response = new AppResponse<>(
                 "success",

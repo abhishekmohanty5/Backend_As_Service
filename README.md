@@ -552,7 +552,7 @@ mvn test -Dtest=AuthServiceTest
 ## AWS EC2 Deployment
 
 ```bash
-# 1. Launch EC2 Ubuntu 22.04, t2.micro (Open port 8080 + 22 in Security Group)
+# 1. Launch EC2 Ubuntu 22.04, t2.micro (open inbound ports 22 and 8080)
 
 # 2. SSH in
 ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
@@ -562,15 +562,30 @@ sudo apt update && sudo apt install -y docker.io docker-compose-plugin
 sudo systemctl start docker
 sudo usermod -aG docker ubuntu
 
-# 4. Clone & configure
-git clone https://github.com/abhishekmohanty5/Saas_Subscription-.git
-cd Saas_Subscription-
-nano .env.dev   # Fill in production values
+# 4. (For GitHub Actions deploy) add repository secrets:
+#    EC2_HOST, EC2_USER, EC2_PRIVATE_KEY, ENV_PROD_FILE
+#    ENV_PROD_FILE should contain values from env.prod.sample
 
-# 5. Launch
-bash setup.sh -d
+# 5. Push to main branch to trigger deployment workflow
+#    .github/workflows/deploy.yml
 
-# App live at: http://<EC2_PUBLIC_IP>:8080
+# 6. Health check
+curl http://<EC2_PUBLIC_IP>:8080/actuator/health
+```
+
+Manual deploy (without GitHub Actions):
+
+```bash
+# Build jar locally first
+./mvnw clean package -DskipTests
+
+# Copy required files to EC2
+scp -i your-key.pem target/saas-0.0.1-SNAPSHOT.jar Dockerfile.prod docker-compose.prod.yml ubuntu@<EC2_PUBLIC_IP>:~/app/
+
+# On EC2, create .env.prod from env.prod.sample values and start stack
+ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
+cd ~/app
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ---
