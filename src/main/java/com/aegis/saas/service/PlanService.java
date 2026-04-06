@@ -38,6 +38,11 @@ public class PlanService {
         return planRepo.findAll();
     }
 
+    @Cacheable(cacheNames = "Plans")
+    public List<Plan> findAllActive() {
+        return planRepo.findByActiveTrue();
+    }
+
     public Page<Plan> findAllPaginated(Pageable pageable) {
         return planRepo.findAll(pageable);
     }

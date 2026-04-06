@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 		"spring.mail.port=1025",
 		"spring.mail.username=",
 		"spring.mail.password=",
-		"jwt.secret=test-secret-key-for-testing-purposes-only-must-be-at-least-32-chars",
+		"application.security.jwt.secret-key=test-secret-key-for-testing-purposes-only-must-be-at-least-32-chars",
 		"jwt.expiration=86400000"
 })
 @ActiveProfiles("test")
