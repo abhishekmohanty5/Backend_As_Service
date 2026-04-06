@@ -33,6 +33,7 @@ build/
 .vscode/
 
 ### Environment Variables ###
+.env
 .env.dev
 .env.local
 .env.*
