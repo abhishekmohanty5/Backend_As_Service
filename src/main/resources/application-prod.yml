@@ -1,20 +1,84 @@
-# Production specific configuration
+server:
+  port: ${PORT:8080}
+
 spring:
+  application:
+    name: aegis
+
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
-  
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
-      ddl-auto: update # Usually 'none' or 'validate' in real prod, but keeping 'update' as per user's file
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY}
+      expiration: ${JWT_EXPIRATION_MS:3600000}
+    refresh-token:
+      expiration: ${REFRESH_TOKEN_EXPIRATION_MS:604800000}  # 7 days default
   cors:
-    default-origins: ${CORS_ALLOWED_ORIGINS:https://saas-frontend2-0.vercel.app/}
+    default-origins: ${CORS_ALLOWED_ORIGINS}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:*}
 
-# In production, we might want different logging levels
 logging:
   level:
-    root: WARN
-    com.aegis.saas: INFO
+    root: INFO
+    com.aegis: DEBUG
+    org.hibernate.SQL: ERROR
+
+password:
+  reset:
+    token:
+      expiration-hours: ${PASSWORD_RESET_TOKEN_EXPIRATION_HOURS:1}
+
+email:
+  token:
+    expiration-hours: 24
+
+saas:
+  insights:
+    yearly-switch-threshold: 500
+    entertainment-category: Entertainment
+    entertainment-max-count: 2
+  churn:
+    discount-code: ${CHURN_DISCOUNT_CODE:KEEP20}
+
+gemini:
+  api:
+    base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com}
+    version: ${GEMINI_API_VERSION:v1beta}
+    key: ${GEMINI_API_KEY}
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
+
+app:
+  base-url: ${APP_BASE_URL}

@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: aegis
+  active:
+    profiles: ${SPRING_PROFILES_ACTIVE:local}
 
   datasource:
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/aegis_infra?createDatabaseIfNotExist=true}
@@ -47,6 +49,8 @@ application:
       expiration: ${REFRESH_TOKEN_EXPIRATION_MS:604800000}  # 7 days default
   cors:
     default-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type,Accept,X-Requested-With,X-API-CLIENT-ID,X-API-CLIENT-SECRET,Bypass-Tunnel-Reminder}
 
 password:
   reset:

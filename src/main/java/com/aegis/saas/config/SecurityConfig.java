@@ -31,8 +31,14 @@ public class SecurityConfig {
     private final JWTAuthenticationFilter jwtAuthenticationFilter;
     private final com.aegis.saas.auth.SubscriptionEnforcementFilter subscriptionEnforcementFilter;
 
-    @Value("${application.cors.default-origins}")
+    @Value("${application.cors.default-origins:*}")
     private String corsDefaultOrigins;
+
+    @Value("${application.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS,PATCH}")
+    private String corsAllowedMethods;
+
+    @Value("${application.cors.allowed-headers:*}")
+    private String corsAllowedHeaders;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -84,9 +90,15 @@ public class SecurityConfig {
                 .toList();
         configuration.setAllowedOrigins(allowedOrigins);
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With",
-                "X-API-CLIENT-ID", "X-API-CLIENT-SECRET", "Bypass-Tunnel-Reminder"));
+        // Parse allowed methods and headers from configuration properties
+        configuration.setAllowedMethods(java.util.Arrays.stream(corsAllowedMethods.split(","))
+                .map(String::trim)
+                .toList());
+
+        configuration.setAllowedHeaders(java.util.Arrays.stream(corsAllowedHeaders.split(","))
+                .map(String::trim)
+                .toList());
+
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 
