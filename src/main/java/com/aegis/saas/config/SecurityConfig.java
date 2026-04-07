@@ -87,7 +87,13 @@ public class SecurityConfig {
         java.util.List<String> allowedOrigins = java.util.Arrays.stream(corsDefaultOrigins.split(","))
                 .map(String::trim)
                 .toList();
-        configuration.setAllowedOrigins(allowedOrigins);
+
+        // Use AllowedOriginPatterns to support wildcards with allowCredentials
+        if (allowedOrigins.contains("*")) {
+            configuration.addAllowedOriginPattern("*");
+        } else {
+            configuration.setAllowedOrigins(allowedOrigins);
+        }
 
         // Parse allowed methods and headers from configuration properties
         configuration.setAllowedMethods(java.util.Arrays.stream(corsAllowedMethods.split(","))
