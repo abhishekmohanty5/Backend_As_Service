@@ -63,9 +63,13 @@ public class PasswordResetService {
                 emailService.sendEmail(
                         email,
                         "Password Reset Request",
-                        "Click the link to reset your password: " + resetLink + "\n\n" +
-                                "This link expires in " + resetTokenExpirationHours + " hour(s).\n" +
-                                "If you did not request this, please ignore this email."
+                        "We received a request to reset your password for your AegisInfra account.<br><br>" +
+                        "If you requested this, please click the button below to proceed:<br><br>" +
+                        "<a href=\"" + resetLink + "\" style=\"display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600;\">Reset Password</a><br><br>" +
+                        "Alternatively, copy and paste this link into your browser:<br>" +
+                        "<span style=\"word-break: break-all; color: #64748b; font-size: 14px;\">" + resetLink + "</span><br><br>" +
+                        "This link will expire in <span class=\"highlight\">" + resetTokenExpirationHours + " hours</span>.<br><br>" +
+                        "If you did not request this change, please ignore this email; your password will remain unchanged."
                 );
                 log.info("Password reset email sent to: {}", email);
             } catch (Exception e) {

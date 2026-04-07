@@ -88,9 +88,16 @@ public class UserService {
         if (isEmailConfigured()) {
             try {
                 String verifyLink = baseUrl + "/api/v1/auth/verify-email?token=" + token;
-                emailService.sendEmail(registrationRequest.getEmail(),
-                        "Verify your email",
-                        "Please click the following link to verify your email: " + verifyLink);
+                emailService.sendEmail(
+                        registrationRequest.getEmail(),
+                        "Verify your AegisInfra Account",
+                        "Welcome to AegisInfra! We're excited to have you on board.<br><br>" +
+                        "To get started, please verify your email address by clicking the button below:<br><br>" +
+                        "<a href=\"" + verifyLink + "\" style=\"display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600;\">Verify Email Address</a><br><br>" +
+                        "Alternatively, you can copy and paste this link into your browser:<br>" +
+                        "<span style=\"word-break: break-all; color: #64748b; font-size: 14px;\">" + verifyLink + "</span><br><br>" +
+                        "This link will expire in <span class=\"highlight\">" + tokenExpirationHours + " hours</span>."
+                );
                 log.info("Verification email sent to: {}", registrationRequest.getEmail());
             } catch (Exception e) {
                 log.warn("Failed to send verification email to: {} — user was still created successfully",

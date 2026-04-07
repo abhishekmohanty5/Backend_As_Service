@@ -25,9 +25,9 @@ public class DatabaseSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Checking infrastructure data...");
 
-        if (planRepo.findByName("FREE").isEmpty()) {
+        java.util.Optional<com.aegis.saas.entity.Plan> freePlanOpt = planRepo.findByName("FREE");
+        if (freePlanOpt.isEmpty()) {
             log.info("FREE plan not found. Seeding default infrastructure plan...");
-
             Plan defaultPlan = new Plan();
             defaultPlan.setName("FREE");
             defaultPlan.setPrice(BigDecimal.ZERO);
@@ -35,12 +35,19 @@ public class DatabaseSeeder implements CommandLineRunner {
             defaultPlan.setActive(true);
             defaultPlan.setCreatedAt(LocalDateTime.now());
             defaultPlan.setUpdatedAt(LocalDateTime.now());
-
             planRepo.save(defaultPlan);
-            
             log.info("Successfully seeded FREE plan into database!");
         } else {
-            log.info("Infrastructure data already exists. Skipping seed.");
+            Plan existingPlan = freePlanOpt.get();
+            if (existingPlan.getDurationInDays() != 14) {
+                log.info("Updating existing FREE plan duration from {} to 14 days...", existingPlan.getDurationInDays());
+                existingPlan.setDurationInDays(14);
+                existingPlan.setUpdatedAt(LocalDateTime.now());
+                planRepo.save(existingPlan);
+                log.info("Successfully updated FREE plan duration!");
+            } else {
+                log.info("Infrastructure data already exists and is up to date (14 days). Skipping seed.");
+            }
         }
     }
 }

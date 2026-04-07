@@ -84,15 +84,20 @@ public class EngineSubscriptionReminder {
         log.info("Sent {} day expiration reminder to {}", daysLeft, email);
     }
 
+    @org.springframework.beans.factory.annotation.Value("${app.base-url}")
+    private String baseUrl;
+
     private String buildEmailBody(String adminName, String tenantName, String planName, LocalDateTime expireDate,
             int daysLeft) {
-        return "Hi " + adminName + ",\n\n" +
-                "This is a reminder that your Aegis Infra Engine Subscription for '" + tenantName
-                + "' is expiring soon.\n\n" +
-                "Current Plan: " + planName + "\n" +
-                "Expiration Date: " + expireDate.toLocalDate() + " (" + daysLeft + " days left)\n\n" +
-                "Please log in to your dashboard to upgrade or renew your plan to avoid any interruption in API services.\n\n"
-                +
-                "Thanks,\nAegis Infra Team";
+        return "Hi " + adminName + ",<br><br>" +
+                "This is a professional reminder that your <strong>Aegis Infra Engine Subscription</strong> for the infrastructure <strong>'" + tenantName
+                + "'</strong> is nearing its expiration.<br><br>" +
+                "<div style=\"background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb;\">" +
+                "<strong>Current Plan:</strong> " + planName + "<br>" +
+                "<strong>Expiration date:</strong> <span class=\"highlight\">" + expireDate.toLocalDate() + "</span> (" + daysLeft + " days remaining)" +
+                "</div><br>" +
+                "To ensure uninterrupted infrastructure and API services, please log in to your dashboard to renew or upgrade your current plan.<br><br>" +
+                "<a href=\"" + (baseUrl != null ? baseUrl : "https://aegisinfra.me/dashboard") + "\" style=\"display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600;\">Access Dashboard</a><br><br>" +
+                "If you've already renewed, please ignore this message. Thank you for trusting AegisInfra.";
     }
 }
