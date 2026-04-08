@@ -87,7 +87,7 @@ public class UserService {
         // 7. Send verification email — skip gracefully if not configured
         if (isEmailConfigured()) {
             try {
-                String verifyLink = baseUrl + "/api/v1/auth/verify-email?token=" + token;
+                String verifyLink = baseUrl + "/verify-email?token=" + token;
                 emailService.sendEmail(
                         registrationRequest.getEmail(),
                         "Verify your AegisInfra Account",
@@ -133,7 +133,7 @@ public class UserService {
             return;
         }
         try {
-            String verifyLink = baseUrl + "/api/v1/auth/verify-email?token=" + token;
+            String verifyLink = baseUrl + "/verify-email?token=" + token;
             emailService.sendEmail(email, "Verify your email",
                     "Please click the following link to verify your email: " + verifyLink);
             log.info("Verification email resent to: {}", email);

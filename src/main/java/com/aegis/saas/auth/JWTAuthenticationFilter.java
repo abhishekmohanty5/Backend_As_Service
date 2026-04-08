@@ -38,9 +38,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         if (path.startsWith("/api/v1/auth")
                 || path.startsWith("/api/v1/health")
-                || path.equals("/api/v1/users/register")
-                || path.equals("/api/v1/users/login")
-                || path.equals("/api/v1/users/plans")) {
+                || path.contains("/users/register")
+                || path.contains("/users/login")
+                || path.contains("/users/plans")) {
             filterChain.doFilter(request, response);
             return;
         }
