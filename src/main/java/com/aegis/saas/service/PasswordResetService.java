@@ -59,7 +59,7 @@ public class PasswordResetService {
         // Send reset email
         if (isEmailConfigured()) {
             try {
-                String resetLink = baseUrl + "/api/v1/auth/reset-password-page?token=" + token;
+                String resetLink = baseUrl + "/reset-password?token=" + token;
                 emailService.sendEmail(
                         email,
                         "Password Reset Request",
