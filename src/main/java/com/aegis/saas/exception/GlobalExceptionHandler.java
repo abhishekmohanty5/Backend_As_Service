@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<AppResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
         log.warn("ResourceNotFoundException: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new AppResponse<>("Not Found", ex.getMessage(), 404, LocalDateTime.now()));
+                .body(new AppResponse<>(ex.getMessage(), null, 404, LocalDateTime.now()));
     }
 
     /** 400 — business rule violation */
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<AppResponse<String>> handleBusinessException(BusinessException ex) {
         log.warn("BusinessException: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new AppResponse<>("Bad Request", ex.getMessage(), 400, LocalDateTime.now()));
+                .body(new AppResponse<>(ex.getMessage(), null, 400, LocalDateTime.now()));
     }
 
     /** 400 — unverified email logic */
@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<AppResponse<String>> handleUnverifiedEmailException(UnverifiedEmailException ex) {
         log.warn("UnverifiedEmailException: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new AppResponse<>("Bad Request", ex.getMessage(), 400, LocalDateTime.now()));
+                .body(new AppResponse<>(ex.getMessage(), null, 400, LocalDateTime.now()));
     }
 
     /** 403 — ownership / permission violation */
@@ -76,7 +76,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<AppResponse<String>> handleUnauthorized(UnauthorizedException ex) {
         log.warn("UnauthorizedException: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new AppResponse<>("Forbidden", ex.getMessage(), 403, LocalDateTime.now()));
+                .body(new AppResponse<>(ex.getMessage(), null, 403, LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.DisabledException.class)
+    public ResponseEntity<AppResponse<String>> handleDisabledException(org.springframework.security.authentication.DisabledException ex) {
+        log.warn("DisabledException: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new AppResponse<>("Account is disabled. Please verify your email.", null, 403, LocalDateTime.now()));
     }
 
     /** 500 — last resort catch-all */

@@ -66,6 +66,25 @@ public class AuthControllerInfra {
         return ResponseEntity.ok(body);
     }
 
+    @PostMapping("/resend-verification")
+    public ResponseEntity<AppResponse<String>> resendVerification(@RequestBody java.util.Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(
+                    new AppResponse<>("Email is required", null, 400, LocalDateTime.now()));
+        }
+        try {
+            userService.resendVerificationEmail(email.trim());
+        } catch (Exception e) {
+            log.warn("Resend verification failed for {}: {}", email, e.getMessage());
+            // Return success regardless to prevent email enumeration
+        }
+        AppResponse<String> appResponse =
+                new AppResponse<>("If the email is registered and unverified, a new verification link has been sent.",
+                        null, 200, LocalDateTime.now());
+        return ResponseEntity.ok(appResponse);
+    }
+
     @GetMapping("/verify-email")
     public ResponseEntity<AppResponse<String>> verifyEmail(@RequestParam String token) {
         authService.verifyEmail(token);

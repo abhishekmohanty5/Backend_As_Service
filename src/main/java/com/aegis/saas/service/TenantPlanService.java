@@ -10,6 +10,8 @@ import com.aegis.saas.repository.TenantRepo;
 import com.aegis.saas.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -44,12 +46,12 @@ public class TenantPlanService {
         return tenantPlanRepo.findByTenantId(TenantContext.getTenantId());
     }
 
+    public Page<TenantPlan> getPlansForCurrentTenant(Pageable pageable) {
+        return tenantPlanRepo.findByTenantId(TenantContext.getTenantId(), pageable);
+    }
+
     public TenantPlan updatePlan(Long planId, TenantPlanDto dto) {
-        TenantPlan plan = tenantPlanRepo.findById(planId)
-                .orElseThrow(() -> new ResourceNotFoundException("TenantPlan", planId));
-        if (!plan.getTenant().getId().equals(TenantContext.getTenantId())) {
-            throw new UnauthorizedException("You do not have permission to modify this plan.");
-        }
+        TenantPlan plan = getOwnedPlan(planId);
         plan.setName(dto.getName());
         plan.setDescription(dto.getDescription());
         plan.setPrice(dto.getPrice());
@@ -59,11 +61,28 @@ public class TenantPlanService {
     }
 
     public void deletePlan(Long planId) {
+        TenantPlan plan = getOwnedPlan(planId);
+        tenantPlanRepo.delete(plan);
+    }
+
+    public TenantPlan activatePlan(Long planId) {
+        TenantPlan plan = getOwnedPlan(planId);
+        plan.setActive(true);
+        return tenantPlanRepo.save(plan);
+    }
+
+    public TenantPlan deactivatePlan(Long planId) {
+        TenantPlan plan = getOwnedPlan(planId);
+        plan.setActive(false);
+        return tenantPlanRepo.save(plan);
+    }
+
+    private TenantPlan getOwnedPlan(Long planId) {
         TenantPlan plan = tenantPlanRepo.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("TenantPlan", planId));
         if (!plan.getTenant().getId().equals(TenantContext.getTenantId())) {
-            throw new UnauthorizedException("You do not have permission to delete this plan.");
+            throw new UnauthorizedException("You do not have permission to modify this plan.");
         }
-        tenantPlanRepo.delete(plan);
+        return plan;
     }
 }

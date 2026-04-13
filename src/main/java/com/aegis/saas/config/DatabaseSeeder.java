@@ -25,29 +25,53 @@ public class DatabaseSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Checking infrastructure data...");
 
-        java.util.Optional<com.aegis.saas.entity.Plan> freePlanOpt = planRepo.findByName("FREE");
-        if (freePlanOpt.isEmpty()) {
-            log.info("FREE plan not found. Seeding default infrastructure plan...");
-            Plan defaultPlan = new Plan();
-            defaultPlan.setName("FREE");
-            defaultPlan.setPrice(BigDecimal.ZERO);
-            defaultPlan.setDurationInDays(14);
-            defaultPlan.setActive(true);
-            defaultPlan.setCreatedAt(LocalDateTime.now());
-            defaultPlan.setUpdatedAt(LocalDateTime.now());
-            planRepo.save(defaultPlan);
-            log.info("Successfully seeded FREE plan into database!");
-        } else {
-            Plan existingPlan = freePlanOpt.get();
-            if (existingPlan.getDurationInDays() != 14) {
-                log.info("Updating existing FREE plan duration from {} to 14 days...", existingPlan.getDurationInDays());
-                existingPlan.setDurationInDays(14);
-                existingPlan.setUpdatedAt(LocalDateTime.now());
-                planRepo.save(existingPlan);
-                log.info("Successfully updated FREE plan duration!");
-            } else {
-                log.info("Infrastructure data already exists and is up to date (14 days). Skipping seed.");
-            }
+        ensurePlan("FREE", BigDecimal.ZERO, 14);
+        ensurePlan("Starter", BigDecimal.valueOf(499), 30);
+        ensurePlan("Pro", BigDecimal.valueOf(1499), 30);
+        ensurePlan("Enterprise", BigDecimal.valueOf(3999), 30);
+
+        log.info("Infrastructure pricing plans are seeded and up to date.");
+    }
+
+    private void ensurePlan(String name, BigDecimal price, int durationInDays) {
+        java.util.Optional<Plan> existingOpt = planRepo.findByName(name);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (existingOpt.isEmpty()) {
+            log.info("Seeding {} plan...", name);
+            Plan plan = new Plan();
+            plan.setName(name);
+            plan.setPrice(price);
+            plan.setDurationInDays(durationInDays);
+            plan.setActive(true);
+            plan.setCreatedAt(now);
+            plan.setUpdatedAt(now);
+            planRepo.save(plan);
+            return;
+        }
+
+        Plan existing = existingOpt.get();
+        boolean changed = false;
+
+        if (existing.getPrice() == null || existing.getPrice().compareTo(price) != 0) {
+            existing.setPrice(price);
+            changed = true;
+        }
+
+        if (existing.getDurationInDays() != durationInDays) {
+            existing.setDurationInDays(durationInDays);
+            changed = true;
+        }
+
+        if (!existing.isActive()) {
+            existing.setActive(true);
+            changed = true;
+        }
+
+        if (changed) {
+            existing.setUpdatedAt(now);
+            planRepo.save(existing);
+            log.info("Updated {} plan to the canonical pricing.", name);
         }
     }
 }

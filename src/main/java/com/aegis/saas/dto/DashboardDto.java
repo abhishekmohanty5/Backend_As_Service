@@ -27,7 +27,6 @@ public class DashboardDto {
 
     // API Credentials
     private String clientId;
-    private String clientSecret;
 
     // Usage
     private Long apiCallCount;

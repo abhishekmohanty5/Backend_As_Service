@@ -30,8 +30,11 @@ public class Tenant {
     @Column(nullable = false, unique = true, updatable = false)
     private String clientId;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private String clientSecret;
+
+    @Column(name = "client_secret_generated_at")
+    private LocalDateTime clientSecretGeneratedAt;
 
     @Column(nullable = false)
     private Long apiCallCount = 0L;
@@ -53,9 +56,6 @@ public class Tenant {
         this.setEnable = false;
         if (this.clientId == null) {
             this.clientId = "sb_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-        }
-        if (this.clientSecret == null) {
-            this.clientSecret = "sk_" + UUID.randomUUID().toString().replace("-", "");
         }
     }
 

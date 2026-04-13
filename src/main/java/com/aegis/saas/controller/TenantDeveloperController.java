@@ -9,40 +9,97 @@ import com.aegis.saas.repository.TenantRepo;
 import com.aegis.saas.repository.UserRepo;
 import com.aegis.saas.service.TenantPlanService;
 import com.aegis.saas.tenant.TenantContext;
+import com.aegis.saas.auth.AuthContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 
 @Tag(name = "Tenant Admin - Settings", description = "Manage API keys, tenant plans and view end users")
 @RestController
 @RequestMapping("/api/v1/tenant-admin")
 @RequiredArgsConstructor
+@Slf4j
+@org.springframework.transaction.annotation.Transactional
 public class TenantDeveloperController {
 
         private final TenantPlanService tenantPlanService;
         private final TenantRepo tenantRepo;
         private final UserRepo userRepo;
+        private final AuthContext authContext;
+        private final PasswordEncoder passwordEncoder;
 
         // --- API KEY MANAGEMENT ---
 
         @GetMapping("/keys")
-        public ResponseEntity<AppResponse<Map<String, String>>> getApiKeys() {
-                Long tenantId = TenantContext.getTenantId();
-                Tenant tenant = tenantRepo.findById(tenantId)
-                                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        public ResponseEntity<AppResponse<Map<String, Object>>> getApiKeys() {
+                Long userId = authContext.getCurrentUserId();
+                Users user = userRepo.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                Tenant tenant = user.getTenant();
 
-                Map<String, String> keys = new HashMap<>();
+                if (tenant == null) {
+                        throw new RuntimeException("No tenant associated with user");
+                }
+
+                log.info("Retrieving API keys for tenant: {} (User: {})", tenant.getId(), userId);
+
+                Map<String, Object> keys = new HashMap<>();
                 keys.put("clientId", tenant.getClientId());
-                keys.put("clientSecret", tenant.getClientSecret());
+                keys.put("hasSecret", tenant.getClientSecret() != null);
+                keys.put("secretPreview", tenant.getClientSecret() != null ? "sk_************" : null);
+                keys.put("secretGeneratedAt", tenant.getClientSecretGeneratedAt());
 
-                AppResponse<Map<String, String>> response = AppResponse.<Map<String, String>>builder()
+                AppResponse<Map<String, Object>> response = AppResponse.<Map<String, Object>>builder()
                                 .message("Successfully retrieved API keys")
+                                .data(keys)
+                                .status(HttpStatus.OK.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
+        @PostMapping("/keys/regenerate")
+        public ResponseEntity<AppResponse<Map<String, Object>>> regenerateApiKeys() {
+                Long userId = authContext.getCurrentUserId();
+                Users user = userRepo.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                Tenant tenant = user.getTenant();
+
+                if (tenant == null) {
+                        throw new RuntimeException("No tenant associated with user");
+                }
+
+                log.info("Regenerating API keys for tenant: {} (User: {})", tenant.getId(), userId);
+
+                // Generate new client secret
+                String newSecret = "sk_" + UUID.randomUUID().toString().replace("-", "");
+                tenant.setClientSecret(passwordEncoder.encode(newSecret));
+                tenant.setClientSecretGeneratedAt(LocalDateTime.now());
+                tenantRepo.save(tenant);
+
+                log.info("Successfully generated new secret for tenant: {}", tenant.getId());
+
+                Map<String, Object> keys = new HashMap<>();
+                keys.put("clientId", tenant.getClientId());
+                keys.put("clientSecret", newSecret);
+                keys.put("hasSecret", true);
+                keys.put("secretPreview", "sk_************");
+                keys.put("secretGeneratedAt", LocalDateTime.now());
+
+                AppResponse<Map<String, Object>> response = AppResponse.<Map<String, Object>>builder()
+                                .message("Successfully regenerated API client secret. Old secret is now invalid.")
                                 .data(keys)
                                 .status(HttpStatus.OK.value())
                                 .timestamp(LocalDateTime.now())
@@ -69,15 +126,43 @@ public class TenantDeveloperController {
         }
 
         @GetMapping("/tenant-plans")
-        public ResponseEntity<AppResponse<List<TenantPlanResponseDto>>> getTenantPlans() {
-                List<TenantPlan> plans = tenantPlanService.getPlansForCurrentTenant();
-                List<TenantPlanResponseDto> dtos = plans.stream()
-                                .map(this::mapToTenantPlanResponseDto)
-                                .toList();
+        public ResponseEntity<AppResponse<PaginatedResponse<TenantPlanResponseDto>>> getTenantPlans(Pageable pageable) {
+                Page<TenantPlan> plans = tenantPlanService.getPlansForCurrentTenant(pageable);
+                Page<TenantPlanResponseDto> mapped = plans.map(this::mapToTenantPlanResponseDto);
 
-                AppResponse<List<TenantPlanResponseDto>> response = AppResponse.<List<TenantPlanResponseDto>>builder()
+                AppResponse<PaginatedResponse<TenantPlanResponseDto>> response = AppResponse.<PaginatedResponse<TenantPlanResponseDto>>builder()
                                 .message("Successfully retrieved Tenant Plans")
-                                .data(dtos)
+                                .data(PaginatedResponse.from(mapped))
+                                .status(HttpStatus.OK.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
+        @PutMapping("/tenant-plans/{id}/activate")
+        public ResponseEntity<AppResponse<TenantPlanResponseDto>> activateTenantPlan(@PathVariable Long id) {
+                TenantPlan plan = tenantPlanService.activatePlan(id);
+                TenantPlanResponseDto dto = mapToTenantPlanResponseDto(plan);
+
+                AppResponse<TenantPlanResponseDto> response = AppResponse.<TenantPlanResponseDto>builder()
+                                .message("Successfully activated Tenant Plan")
+                                .data(dto)
+                                .status(HttpStatus.OK.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                return ResponseEntity.ok(response);
+        }
+
+        @PutMapping("/tenant-plans/{id}/deactivate")
+        public ResponseEntity<AppResponse<TenantPlanResponseDto>> deactivateTenantPlan(@PathVariable Long id) {
+                TenantPlan plan = tenantPlanService.deactivatePlan(id);
+                TenantPlanResponseDto dto = mapToTenantPlanResponseDto(plan);
+
+                AppResponse<TenantPlanResponseDto> response = AppResponse.<TenantPlanResponseDto>builder()
+                                .message("Successfully deactivated Tenant Plan")
+                                .data(dto)
                                 .status(HttpStatus.OK.value())
                                 .timestamp(LocalDateTime.now())
                                 .build();

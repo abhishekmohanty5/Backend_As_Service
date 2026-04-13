@@ -75,7 +75,8 @@ public class AuthService {
         }
 
         if (verificationToken.isVerified()) {
-            throw new BusinessException("Email has already been verified. You can log in.");
+            log.info("Email already verified for token: {}. Returning success.", token);
+            return;
         }
 
         // 1. Mark user as verified

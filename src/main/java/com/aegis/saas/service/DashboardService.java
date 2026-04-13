@@ -61,7 +61,6 @@ public class DashboardService {
                 .planExpiryDate(planExpiryDate)
                 .daysRemaining(daysRemaining)
                 .clientId(tenant != null ? tenant.getClientId() : null)
-                .clientSecret(tenant != null ? tenant.getClientSecret() : null)
                 .apiCallCount(tenant != null ? tenant.getApiCallCount() : 0L)
                 .apiCallLimit(50000L)
                 .authServiceEnabled(true)

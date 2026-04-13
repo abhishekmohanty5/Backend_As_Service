@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface TenantRepo extends JpaRepository<Tenant, Long> {
 
-    Optional<Tenant> findByClientIdAndClientSecret(String clientId, String clientSecret);
+    Optional<Tenant> findByClientId(String clientId);
 
     /**
      * Atomically increments API call counter with a single SQL UPDATE.

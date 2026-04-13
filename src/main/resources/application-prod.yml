@@ -84,3 +84,13 @@ gemini:
     version: ${GEMINI_API_VERSION:v1beta}
     key: ${GEMINI_API_KEY}
     model: ${GEMINI_MODEL:gemini-2.5-flash}
+
+payment:
+  razorpay:
+    enabled: ${RAZORPAY_ENABLED:true}
+    mode: ${RAZORPAY_MODE:test}
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    currency: ${RAZORPAY_CURRENCY:INR}
+    merchant-name: ${RAZORPAY_MERCHANT_NAME:Aegis Infra}
+    description-prefix: ${RAZORPAY_DESCRIPTION_PREFIX:Aegis subscription payment}

@@ -47,6 +47,26 @@ To run the Aegis Core in production, ensure the following variables are configur
 | `MAIL_USERNAME` | Brevo SMTP Relay Username |
 | `GEMINI_API_KEY` | API Key for Google Gemini AI Engine |
 | `CORS_ALLOWED_ORIGINS` | `https://aegisinfra.me` (Whitelisted Frontend) |
+| `RAZORPAY_KEY_ID` | Razorpay test key ID used by the checkout |
+| `RAZORPAY_KEY_SECRET` | Razorpay test secret used to verify signatures |
+
+---
+
+## 💳 Razorpay Test Checkout
+
+The backend now supports a Razorpay test flow for tenant admin billing. Use test keys only while developing or demoing.
+
+1. Create an order with:
+   `POST /api/v1/tenant-admin/billing/razorpay/order`
+
+2. Send the returned `keyId` and `orderId` to the Razorpay Checkout widget in the frontend.
+
+3. After payment succeeds, verify it with:
+   `POST /api/v1/tenant-admin/billing/razorpay/verify`
+
+4. When the signature matches, the backend upgrades the tenant subscription and stores the Razorpay payment ID as the transaction reference.
+
+The legacy mock payment endpoint still exists, but the Razorpay flow above is the recommended demo path.
 
 ---
 

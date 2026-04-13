@@ -17,13 +17,21 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(apiUsageInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/v1/auth/**", "/api/v1/health/**", "/error", "/api/v1/users/register", "/api/v1/users/login", "/api/v1/users/plans");
+                .excludePathPatterns(
+                        "/api/v1/auth/**",
+                        "/api/v1/health/**",
+                        "/api/v1/public/**",
+                        "/error",
+                        "/api/v1/users/register",
+                        "/api/v1/users/login",
+                        "/api/v1/users/plans");
 
         registry.addInterceptor(apiKeyInterceptor)
                 .addPathPatterns("/api/v1/**")
                 .excludePathPatterns(
                         "/api/v1/auth/**",          // Tenant auth — no API key needed
                         "/api/v1/health/**",         // Public health check
+                        "/api/v1/public/**",         // Public pricing and docs
                         "/api/v1/super-admin/**",    // Super admin uses JWT
                         "/api/v1/tenant-admin/**",   // Tenant admin uses JWT
                         "/api/v1/users/register",    // End-user register — no key yet

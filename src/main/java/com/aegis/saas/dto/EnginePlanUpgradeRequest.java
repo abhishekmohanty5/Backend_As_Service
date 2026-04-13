@@ -11,6 +11,6 @@ public class EnginePlanUpgradeRequest {
     private Long targetPlanId;
     /** "MONTHLY" or "ANNUAL" */
     private String billingInterval;
-    /** Transaction ID returned by the mock payment endpoint */
+    /** Razorpay payment ID returned after the checkout signature is verified */
     private String transactionId;
 }

@@ -61,6 +61,9 @@ public class UserService {
         // 2. Create Tenant (INACTIVE until email verification)
         Tenant tenant = new Tenant();
         tenant.setName(registrationRequest.getTenantName());
+        String rawTenantSecret = "sk_" + UUID.randomUUID().toString().replace("-", "");
+        tenant.setClientSecret(passwordEncoder.encode(rawTenantSecret));
+        tenant.setClientSecretGeneratedAt(LocalDateTime.now());
         tenant = tenantRepo.save(tenant);
         // NOTE: No TenantSubscription created here.
         // The FREE plan subscription (14 days) is created after email verification
