@@ -62,14 +62,24 @@ public class PasswordResetService {
                 String resetLink = baseUrl + "/reset-password?token=" + token;
                 emailService.sendEmail(
                         email,
-                        "Password Reset Request",
-                        "We received a request to reset your password for your AegisInfra account.<br><br>" +
-                        "If you requested this, please click the button below to proceed:<br><br>" +
-                        "<a href=\"" + resetLink + "\" style=\"display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600;\">Reset Password</a><br><br>" +
-                        "Alternatively, copy and paste this link into your browser:<br>" +
-                        "<span style=\"word-break: break-all; color: #64748b; font-size: 14px;\">" + resetLink + "</span><br><br>" +
-                        "This link will expire in <span class=\"highlight\">" + resetTokenExpirationHours + " hours</span>.<br><br>" +
-                        "If you did not request this change, please ignore this email; your password will remain unchanged."
+                        "Reset your password",
+                        """
+                        <h1>Reset your password</h1>
+                        <p>We received a request to reset your password for your AegisInfra account.</p>
+                        <p>If you requested this change, please click the button below to set a new password:</p>
+                        <div class="btn-container">
+                            <a href="%s" class="btn">Reset Password</a>
+                        </div>
+                        <p class="fallback-link">
+                            Alternatively, you can copy and paste this link into your browser:<br>
+                            %s
+                        </p>
+                        <div class="divider"></div>
+                        <p style="font-size: 14px; color: #64748b;">
+                            This link will expire in <strong>%d hours</strong>.<br>
+                            If you did not request this, you can safely ignore this email; your password will remain unchanged.
+                        </p>
+                        """.formatted(resetLink, resetLink, resetTokenExpirationHours)
                 );
                 log.info("Password reset email sent to: {}", email);
             } catch (Exception e) {

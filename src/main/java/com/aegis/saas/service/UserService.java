@@ -137,7 +137,7 @@ public class UserService {
         }
         try {
             String verifyLink = baseUrl + "/verify-email?token=" + token;
-            emailService.sendEmail(email, "Verify your email",
+            emailService.sendEmail(email, "Verify your email address",
                     "Please click the following link to verify your email: " + verifyLink);
             log.info("Verification email resent to: {}", email);
         } catch (Exception e) {
