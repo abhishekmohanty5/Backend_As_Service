@@ -9,6 +9,9 @@
 
 name: CI — Build & Test
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [ "main", "development" ]
@@ -24,7 +27,7 @@ jobs:
 
       # ── 1. Checkout code ─────────────────────────────────
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ── 2. Configure git authentication ──────────────────
       - name: Configure git authentication
