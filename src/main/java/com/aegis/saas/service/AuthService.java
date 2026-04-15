@@ -60,6 +60,7 @@ public class AuthService {
         loginResponse.setTokenType(tokenResponse.getTokenType());
         loginResponse.setExpiresIn(tokenResponse.getExpiresIn());
         loginResponse.setEmail(loginRequest.getEmail());
+        loginResponse.setName(user.getUsername());
         loginResponse.setRole(user.getRole());
         
         log.info("User logged in: {}", user.getEmail());

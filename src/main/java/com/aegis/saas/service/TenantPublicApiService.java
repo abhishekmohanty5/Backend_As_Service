@@ -85,6 +85,7 @@ public class TenantPublicApiService {
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(token);
         loginResponse.setEmail(user.getEmail());
+        loginResponse.setName(user.getUsername());
         loginResponse.setRole(user.getRole());
         return loginResponse;
     }
