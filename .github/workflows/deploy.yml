@@ -1,5 +1,10 @@
 # ============================================================
 # Build & Deploy to Azure Web App for Containers
+# 
+# IMPORTANT AZURE SETTINGS (Set in Azure Portal > Configuration):
+# - Name: WEBSITES_PORT, Value: 8080 (MANDATORY for Spring Boot)
+# - Name: JWT_SECRET_KEY, Value: <your-secret>
+# - Name: DATABASE_URL, Value: <jdbc-url>
 # ============================================================
 name: Build & Deploy — SaaS Backend (Azure)
 
